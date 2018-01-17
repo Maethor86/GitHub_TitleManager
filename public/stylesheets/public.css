@@ -80,11 +80,13 @@ p,h1,h2,h3 {
   text-decoration: none;
 }
 #sidebar_left a:hover { color: #FFFFFF; }
+
 ul.subjects {
   margin: 1em 0; padding-left: 0; list-style: none;
 }
 ul.pages {
   padding-left: 2em; list-style: square; font-weight: normal;
+  margin: 0;
 }
 .selected { font-weight: bold; }
 
@@ -144,7 +146,7 @@ ul.users {
 }
 li.users {
   display: table-row;
-  
+
 }
 .users div {
   padding-bottom: .2em;
@@ -216,4 +218,10 @@ li.page_header {
   padding-bottom: 0;
   margin: 0;
   display: table-row;
+}
+
+ul.page_title {
+  margin: 0 0; padding-left: 0; list-style: none;
+  font-size: 1.5em;
+
 }

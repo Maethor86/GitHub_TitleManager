@@ -11,9 +11,14 @@ class Movie extends DatabaseObject {
 
   protected $MovieID;
   protected $DateTimeCreated;
+  protected $CreatedByUser;
   protected $Title;
+  protected $IMDBID;
   protected $IMDBRating;
   protected $RunningTime;
+  protected $IMDBVotes;
+  protected $Plot;
+  protected $ReleasedYear;
 
   // -------------------------------
   public function get_movieid() {
@@ -28,6 +33,15 @@ class Movie extends DatabaseObject {
   public function get_datetimecreated() {
     if (isset($this->DateTimeCreated)) {
       return $this->DateTimeCreated;
+    }
+    else {
+      return "";
+    }
+  }
+
+  public function get_createdbyuser() {
+    if (isset($this->CreatedByUser)) {
+      return $this->CreatedByUser;
     }
     else {
       return "";
@@ -52,6 +66,15 @@ class Movie extends DatabaseObject {
     }
   }
 
+  public function get_imdbid() {
+    if (isset($this->IMDBID)) {
+      return $this->IMDBID;
+    }
+    else {
+      return "";
+    }
+  }
+
   public function get_runningtime() {
     if (isset($this->RunningTime)) {
       return $this->RunningTime;
@@ -61,28 +84,117 @@ class Movie extends DatabaseObject {
     }
   }
 
+  public function get_imdbvotes() {
+    if (isset($this->IMDBVotes)) {
+      return $this->IMDBVotes;
+    }
+    else {
+      return "";
+    }
+  }
+
+  public function get_plot() {
+    if (isset($this->Plot)) {
+      return $this->Plot;
+    }
+    else {
+      return "";
+    }
+  }
+
+  public function get_releasedyear() {
+    if (isset($this->ReleasedYear)) {
+      return $this->ReleasedYear;
+    }
+    else {
+      return "";
+    }
+  }
+
   public static function create($post) {
 
-    $query  = "INSERT INTO " . self::$table_name;
-    $query .= " (DateTimeCreated, Title, IMDBRating, RunningTime)";
-    $query .= " VALUES";
-    $query .= " (?, ?, ?, ?)";
 
-    $params = array(generate_datetime_for_sql(),$post["title"],$post["imdbrating"], $post["runtime"]);
+    $title = $post["title"];
+    $title = str_replace(" ", "+", $title);
+    $title = str_replace(":", "%3A", $title);
+    $search_term = "http://www.omdbapi.com/?apikey=ce86382d&t=" . $title;
+    $response = file_get_contents($search_term);
+    $data = json_decode($response, TRUE);
+
+    $runtime = substr($data["Runtime"], 0, -4);
+    $imdbvotes = str_replace(",", "", $data["imdbVotes"]);
+
+    // $keys = array_keys($data);
+    // foreach ($keys as $key) {
+    //   if ($key != 'Title' && $key != 'Runtime' && $key != 'Plot' && $key != 'imdbRating' && $key != 'imdbVotes' && $key != 'imdbID') {
+    //     unset($data[$key]);
+    //   }
+    // }
+
+    $query  = "INSERT INTO " . self::$table_name;
+    $query .= " (DateTimeCreated, CreatedByUser, Title, IMDBID, IMDBRating, RunningTime, IMDBVotes, Plot, ReleasedYear)";
+    $query .= " VALUES";
+    $query .= " (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+    $params = array(generate_datetime_for_sql(),$_SESSION["user_id"], $data["Title"],$data["imdbID"],$data["imdbRating"],$runtime,$imdbvotes, $data["Plot"],$data["Year"]);
 
     $created_movie = self::create_by_sql($query, $params);
+
     return $created_movie;
 
   }
 
+  public function get_runningtime_hours() {
+    $minutes = $this->get_runningtime();
+    $hours = intdiv($minutes,60);
+    $remaining_minutes = $minutes % 60;
+    return array($hours,$remaining_minutes);
+  }
+
+//
+// {"Title":"Kingsman: The Secret Service",
+//   "Year":"2014",
+//   "Rated":"R",
+//   "Released":"13 Feb 2015",
+//   "Runtime":"129 min",
+//   "Genre":"Action, Adventure, Comedy",
+//   "Director":"Matthew Vaughn",
+//   "Writer":"Jane Goldman (screenplay), Matthew Vaughn (screenplay), Mark Millar (comic book \"The Secret Service\"), Dave Gibbons (comic book \"The Secret Service\")",
+//   "Actors":"Adrian Quinton, Colin Firth, Mark Strong, Jonno Davies",
+//   "Plot":"A spy organization recruits an unrefined, but promising street kid into the agency's ultra-competitive training program, just as a global threat emerges from a twisted tech genius.",
+//   "Language":"English, Arabic, Swedish",
+//   "Country":"UK, USA",
+//   "Awards":"7 wins & 26 nominations.",
+//   "Poster":"https://images-na.ssl-images-amazon.com/images/M/MV5BMTkxMjgwMDM4Ml5BMl5BanBnXkFtZTgwMTk3NTIwNDE@._V1_SX300.jpg",
+//   "Ratings":[{"Source":"Internet Movie Database","Value":"7.7/10"},
+//   {"Source":"Rotten Tomatoes","Value":"74%"},
+//   {"Source":"Metacritic","Value":"60/100"}],
+//   "Metascore":"60",
+//   "imdbRating":"7.7",
+//   "imdbVotes":"486,942",
+//   "imdbID":"tt2802144",
+//   "Type":"movie","DVD":"09 Jun 2015","BoxOffice":"$119,469,511","Production":"20th Century Fox","Website":"http://www.KingsmanMovie.com","Response":"True"}
+//
+//
+
   public function update($post, $movie_id=0) {
 
+    $title = $post["new_title"];
+    $title = str_replace(" ", "+", $title);
+    $title = str_replace(":", "%3A", $title);
+    $search_term = "http://www.omdbapi.com/?apikey=ce86382d&t=" . $title;
+    $response = file_get_contents($search_term);
+    $data = json_decode($response, TRUE);
+
+    $runtime = substr($data["Runtime"], 0, -4);
+    $imdbvotes = str_replace(",", "", $data["imdbVotes"]);
+
     $query  = "UPDATE " . self::$table_name;
-    $query .= " SET Title = ?";
+    $query .= " SET Title = ?, IMDBID = ?, IMDBRating = ?, RunningTime = ?, IMDBVotes = ?, Plot = ?, ReleasedYear = ?";
     $query .= " WHERE";
     $query .= " MovieID = ?";
 
-    $params = array($post["new_title"], $movie_id);
+    $params = array($data["Title"],$data["imdbID"],$data["imdbRating"],$runtime,$imdbvotes, $data["Plot"],$data["Year"], $movie_id);
 
     $updated_movie = self::update_by_sql($query, $params);
     return $updated_movie;

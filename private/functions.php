@@ -34,24 +34,40 @@ function __autoload($class_name) {
 function load_layout($page_type) {
   switch ($page_type) {
     case "login":
-      $files_to_load["header"]        = LAYOUT_PATH.DS."standard".DS."header_standard.php";
-      $files_to_load["sidebar_left"]  = LAYOUT_PATH.DS."login".DS."sidebar_left_login.php";
-      $files_to_load["sidebar_right"] = LAYOUT_PATH.DS."login".DS."sidebar_right_login.php";
-      $files_to_load["footer"]        = LAYOUT_PATH.DS."login".DS."footer_login.php";
+      $layout_files_to_load["header"]        = LAYOUT_PATH.DS."standard".DS."header_standard.php";
+      $layout_files_to_load["sidebar_left"]  = LAYOUT_PATH.DS."login".DS."sidebar_left_login.php";
+      $layout_files_to_load["sidebar_right"] = LAYOUT_PATH.DS."login".DS."sidebar_right_login.php";
+      $layout_files_to_load["footer"]        = LAYOUT_PATH.DS."login".DS."footer_login.php";
       break;
 
     case "standard":
-      $files_to_load["header"]        = LAYOUT_PATH.DS."standard".DS."header_standard.php";
-      $files_to_load["sidebar_left"]  = LAYOUT_PATH.DS."standard".DS."sidebar_left_standard.php";
-      $files_to_load["sidebar_right"] = LAYOUT_PATH.DS."standard".DS."sidebar_right_standard.php";
-      $files_to_load["footer"]        = LAYOUT_PATH.DS."standard".DS."footer_standard.php";
+      $layout_files_to_load["header"]        = LAYOUT_PATH.DS."standard".DS."header_standard.php";
+      $layout_files_to_load["sidebar_left"]  = LAYOUT_PATH.DS."standard".DS."sidebar_left_standard.php";
+      $layout_files_to_load["sidebar_right"] = LAYOUT_PATH.DS."standard".DS."sidebar_right_standard.php";
+      $layout_files_to_load["footer"]        = LAYOUT_PATH.DS."standard".DS."footer_standard.php";
+      $layout_files_to_load["sidebar_left_back"]  = LAYOUT_PATH.DS."sidebar_left_back.php";
+      $layout_files_to_load["sidebar_left_back_search"]  = LAYOUT_PATH.DS."sidebar_left_back_search.php";
       break;
 
     default:
         die("Wrong page type input.");
       break;
   }
-  return $files_to_load;
+  return $layout_files_to_load;
+}
+
+function load_contents($page_type) {
+  switch ($page_type) {
+
+    case "standard":
+      $content_files_to_load["title"]        = PUBLIC_PATH.DS."content_standard.php";
+      break;
+
+    default:
+      die("Wrong page type input.");
+      break;
+  }
+  return $content_files_to_load;
 }
 
 
@@ -65,34 +81,6 @@ function generate_datetime_for_sql() {
 
   return $datetime;
 }
-
-function test_datetime_format($datetime) {
-  if (empty($datetime)) {
-    return FALSE;
-  }
-  elseif (!is_string($datetime)) {
-    return FALSE;
-  }
-  elseif (!validateDateTime($datetime)) {
-    return FALSE;
-  }
-  else {
-    return TRUE;
-  }
-}
-
-
-function validateDateTime($date_string, $format = "Y-m-d H:i:s") {
-  if (!(strlen($date_string) == strlen("0000-00-00 00:00:00.0000000"))) {
-    return FALSE;
-  }
-  $date_part = substr($date_string,0,19);
-  $millisecond_part = substr($date_string,20,7);
-  $date = DateTime::createFromFormat($format, $date_part);
-  return $date && ($date->format($format) === $date_part) && is_numeric($millisecond_part);
-}
-
-
 
 
 // misc functions
@@ -296,9 +284,6 @@ function sql_show_sqlversion() {
   $output = "Currently using SQL Server version: ".reset($sql_version);
   return $output;
 }
-
-
-
 
 
 ?>

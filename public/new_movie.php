@@ -1,9 +1,9 @@
 <?php
 include("../private/initialize.php");
-$files_to_load = load_layout("standard");
+$layout_files_to_load = load_layout("standard");
 
-include($files_to_load["header"]);
-include($files_to_load["sidebar_left"]);
+include($layout_files_to_load["header"]);
+include($layout_files_to_load["sidebar_left_back"]);
 
 if (!($session->is_logged_in() && $session->is_session_valid())) {
   redirect_to("login.php");
@@ -44,12 +44,12 @@ $output .= "<ul class=\"form\">";
 $output .= "<li class=\"form\">";
 $output .= "<div>Title:</div><div><input type=\"text\" name=\"title\" value=$title></div>";
 $output .= "</li>";
-$output .= "<li class=\"form\">";
-$output .= "<div>Running time (minutes):</div><div><input type=\"text\" name=\"runtime\" value=\"\" ></div>";
-$output .= "</li>";
-$output .= "<li class=\"form\">";
-$output .= "<div>IMDB rating:</div><div><input type=\"text\" name=\"imdbrating\" value=\"\" ></div>";
-$output .= "</li>";
+// $output .= "<li class=\"form\">";
+// $output .= "<div>Running time (minutes):</div><div><input type=\"text\" name=\"runtime\" value=\"\" ></div>";
+// $output .= "</li>";
+// $output .= "<li class=\"form\">";
+// $output .= "<div>IMDB rating:</div><div><input type=\"text\" name=\"imdbrating\" value=\"\" ></div>";
+// $output .= "</li>";
 $output .= "</ul>";
 $output .= "<input type=\"submit\" name=\"create_movie\" value=\"Create Movie\" /> <br /><br />";
 $output .= "</form>";
@@ -152,8 +152,8 @@ function delete_movie($get) {
 ?>
 
 <?php
-include($files_to_load["sidebar_right"]);
-include($files_to_load["footer"]);
+include($layout_files_to_load["sidebar_right"]);
+include($layout_files_to_load["footer"]);
 ?>
 
 <?php include(LIB_PATH.DS."deinitialize.php");?>
