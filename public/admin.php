@@ -16,6 +16,7 @@ include($layout_files_to_load["header"]);
 include($layout_files_to_load["sidebar_left"]);
 echo $session->session_message();
 include($content_files_to_load["title"]);
+include($content_files_to_load["subtitles"]);
 ?>
 
 <?php

@@ -3,12 +3,13 @@ include("../private/initialize.php");
 $layout_files_to_load = load_layout("standard");
 
 include($layout_files_to_load["header"]);
-include($layout_files_to_load["sidebar_left_back_search"]);
+include($layout_files_to_load["sidebar_left"]);
 
 if (!($session->is_logged_in() && $session->is_session_valid())) {
   redirect_to("login.php");
 }
 echo $session->session_message();
+echo make_page_title("Browse Movies");
 ?>
 
 
@@ -17,7 +18,7 @@ echo $session->session_message();
 $movies = Movie::find_all_movies();
 $found_movies = FALSE;
 
-$output  = "All movies:";
+$output  = "Movies in the database:";
 $output .= "<ul class=\"movies\">";
 foreach ($movies as $movie) {
   $found_movies = TRUE;
@@ -31,8 +32,8 @@ foreach ($movies as $movie) {
 }
 $output .= " </ul>";
 
-$output .= "<hr />";
-$output .= "<a href=\"new_movie.php\">Add new movie</a>";
+// $output .= "<hr />";
+// $output .= "<a href=\"new_movie.php\">Add new movie</a>";
 
 if ($found_movies) {
 

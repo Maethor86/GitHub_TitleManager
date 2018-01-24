@@ -111,44 +111,69 @@ class Movie extends DatabaseObject {
     }
   }
 
-  public static function create($post) {
-
-
-    $title = $post["title"];
-    $title = str_replace(" ", "+", $title);
-    $title = str_replace(":", "%3A", $title);
-    $search_term = "http://www.omdbapi.com/?apikey=ce86382d&t=" . $title;
-    $response = file_get_contents($search_term);
-    $data = json_decode($response, TRUE);
-
-    $runtime = substr($data["Runtime"], 0, -4);
-    $imdbvotes = str_replace(",", "", $data["imdbVotes"]);
-
-    // $keys = array_keys($data);
-    // foreach ($keys as $key) {
-    //   if ($key != 'Title' && $key != 'Runtime' && $key != 'Plot' && $key != 'imdbRating' && $key != 'imdbVotes' && $key != 'imdbID') {
-    //     unset($data[$key]);
-    //   }
-    // }
-
-    $query  = "INSERT INTO " . self::$table_name;
-    $query .= " (DateTimeCreated, CreatedByUser, Title, IMDBID, IMDBRating, RunningTime, IMDBVotes, Plot, ReleasedYear)";
-    $query .= " VALUES";
-    $query .= " (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-
-    $params = array(generate_datetime_for_sql(),$_SESSION["user_id"], $data["Title"],$data["imdbID"],$data["imdbRating"],$runtime,$imdbvotes, $data["Plot"],$data["Year"]);
-
-    $created_movie = self::create_by_sql($query, $params);
-
-    return $created_movie;
-
-  }
-
   public function get_runningtime_hours() {
     $minutes = $this->get_runningtime();
     $hours = intdiv($minutes,60);
     $remaining_minutes = $minutes % 60;
     return array($hours,$remaining_minutes);
+  }
+
+  public static function get_from_imdb($title) {
+
+    $clean_title = Movie::clean_title_for_imdb($title);
+    $search_term = Movie::get_imdb_url() . $clean_title;
+    $response = file_get_contents($search_term);
+    if ($response) {
+      $data = json_decode($response, TRUE);
+      if ($data["Response"] == "True") {
+        $runtime = substr($data["Runtime"], 0, -4);
+        $imdbvotes = str_replace(",", "", $data["imdbVotes"]);
+        $data["Runtime"] = $runtime;
+        $data["imdbVotes"] = $imdbvotes;
+        return $data;
+      }
+      else {
+        return FALSE;
+      }
+    }
+    else {
+      return FALSE;
+    }
+  }
+
+  public static function clean_title_for_imdb($title) {
+    $title = str_replace(" ", "+", $title);
+    $title = str_replace(":", "%3A", $title);
+    return $title;
+  }
+
+  public static function get_imdb_url() {
+    return "http://www.omdbapi.com/?apikey=ce86382d&t=";
+  }
+
+
+  public static function create($title) {
+
+    $data = Movie::get_from_imdb($title);
+    if ($data) {
+      $query  = "INSERT INTO " . self::$table_name;
+      $query .= " (DateTimeCreated, CreatedByUser, Title, IMDBID, IMDBRating, RunningTime, IMDBVotes, Plot, ReleasedYear)";
+      $query .= " VALUES";
+      $query .= " (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+      $params = array(generate_datetime_for_sql(),$_SESSION["user_id"], $data["Title"],$data["imdbID"],$data["imdbRating"],$data["Runtime"],$data["imdbVotes"], $data["Plot"],$data["Year"]);
+    }
+    else {
+      $query  = "INSERT INTO " . self::$table_name;
+      $query .= " (DateTimeCreated, CreatedByUser, Title)";
+      $query .= " VALUES";
+      $query .= " (?, ?, ?)";
+
+      $params = array(generate_datetime_for_sql(),$_SESSION["user_id"], $title);
+    }
+
+    $created_movie = self::create_by_sql($query, $params);
+    return $created_movie;
   }
 
 //

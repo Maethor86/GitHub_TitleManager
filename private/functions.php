@@ -47,6 +47,7 @@ function load_layout($page_type) {
       $layout_files_to_load["footer"]        = LAYOUT_PATH.DS."standard".DS."footer_standard.php";
       $layout_files_to_load["sidebar_left_back"]  = LAYOUT_PATH.DS."sidebar_left_back.php";
       $layout_files_to_load["sidebar_left_back_search"]  = LAYOUT_PATH.DS."sidebar_left_back_search.php";
+      $layout_files_to_load["sidebar_left_back_browse"]  = LAYOUT_PATH.DS."sidebar_left_back_browse.php";
       break;
 
     default:
@@ -60,7 +61,8 @@ function load_contents($page_type) {
   switch ($page_type) {
 
     case "standard":
-      $content_files_to_load["title"]        = PUBLIC_PATH.DS."content_standard.php";
+      $content_files_to_load["title"]            = PUBLIC_PATH.DS."content_title.php";
+      $content_files_to_load["subtitles"]        = PUBLIC_PATH.DS."content_subtitles.php";
       break;
 
     default:
@@ -80,6 +82,14 @@ function generate_datetime_for_sql() {
   $datetime =  date($datetime_format, $time) . $milli_secs;
 
   return $datetime;
+}
+
+
+// small functions
+
+function make_page_title($page_title="Default") {
+  $output = "<h2 class=\"page_header\">{$page_title}</h2>";
+  return $output;
 }
 
 

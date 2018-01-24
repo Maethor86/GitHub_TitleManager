@@ -3,12 +3,13 @@ include("../private/initialize.php");
 $layout_files_to_load = load_layout("standard");
 
 include($layout_files_to_load["header"]);
-include($layout_files_to_load["sidebar_left_back"]);
+include($layout_files_to_load["sidebar_left"]);
 
 if (!($session->is_logged_in() && $session->is_session_valid())) {
   redirect_to("login.php");
 }
 echo $session->session_message();
+echo make_page_title("Add New Movie");
 ?>
 
 <?php
@@ -21,14 +22,14 @@ if (isset($_POST["create_movie"])) {
   if (empty($errors)) {
 
     $title = $_POST["title"];
-    $created_movie = Movie::create($_POST);
+    $created_movie = Movie::create($title);
     if ($created_movie) {
       $_SESSION["message"] .= "Movie created.<br />";
     }
     else {
       $_SESSION["message"] .= "Movie not created.<br />";
     }
-   redirect_to("browse_movies.php");
+   redirect_to("new_movie.php");
   }
 }
 
@@ -41,19 +42,12 @@ echo form_errors($errors);
 
 $output  = "<form action=\"new_movie.php\" method=\"post\">";
 $output .= "<ul class=\"form\">";
+$output .= "Title:";
 $output .= "<li class=\"form\">";
-$output .= "<div>Title:</div><div><input type=\"text\" name=\"title\" value=$title></div>";
-$output .= "</li>";
-// $output .= "<li class=\"form\">";
-// $output .= "<div>Running time (minutes):</div><div><input type=\"text\" name=\"runtime\" value=\"\" ></div>";
-// $output .= "</li>";
-// $output .= "<li class=\"form\">";
-// $output .= "<div>IMDB rating:</div><div><input type=\"text\" name=\"imdbrating\" value=\"\" ></div>";
-// $output .= "</li>";
-$output .= "</ul>";
-$output .= "<input type=\"submit\" name=\"create_movie\" value=\"Create Movie\" /> <br /><br />";
-$output .= "</form>";
-$output .= "<a href=\"browse_movies.php\">Cancel</a>";
+$output .= "<div><input type=\"text\" name=\"title\" placeholder=\"Enter title...\" style=\"font-style:italic\" value=$title></div>";
+$output .= "<div><input type=\"submit\" name=\"create_movie\" value=\"Add\" /></div></li>";
+$output .= "</ul></form>";
+// $output .= "<a href=\"browse_movies.php\">Cancel</a>";
 echo $output;
 
 /*
