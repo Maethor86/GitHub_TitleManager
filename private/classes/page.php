@@ -63,7 +63,10 @@ class Page extends DatabaseObject {
 
   public static function find_pages($SubjectID=0) {
     // $called_class = get_called_class();
-    $query = "SELECT * FROM " . Page::$table_name . " WHERE SubjectID = ? ";
+    $query  = "SELECT * FROM " . Page::$table_name;
+    $query .= " WHERE SubjectID = ?";
+    $query .= " ORDER BY Position ";
+
     $params = array($SubjectID);
     $result_array = Page::find_by_sql($query, $params);
     // $result_set = $database->query($query, $params);

@@ -1,29 +1,25 @@
 <?php
 include("../private/initialize.php");
-$files_to_load = load_layout("standard");
+$layout_files_to_load = load_layout("standard");
 
-include($files_to_load["header"]);
-include($files_to_load["sidebar_left"]);
+include($layout_files_to_load["header"]);
+include($layout_files_to_load["sidebar_left"]);
 
 if (!($session->is_logged_in() && $session->is_session_valid())) {
   redirect_to("login.php");
 }
 echo $session->session_message();
+echo make_page_title("Browse Movies");
 ?>
 
 
 <?php
-// if ($_SESSION["movie_set"]) {
-//   // have some list of movies to show
-// }
-// else {
-//   // list all movies
-//
-// }
+
 $movies = Movie::find_all_movies();
 $found_movies = FALSE;
 
-$output  = "<ul class=\"movies\">";
+$output  = "Movies in the database:";
+$output .= "<ul class=\"movies\">";
 foreach ($movies as $movie) {
   $found_movies = TRUE;
   $output .= "<li class=\"movies\">";
@@ -36,8 +32,8 @@ foreach ($movies as $movie) {
 }
 $output .= " </ul>";
 
-$output .= "<hr />";
-$output .= "<a href=\"new_movie.php\">New movie</a>";
+// $output .= "<hr />";
+// $output .= "<a href=\"new_movie.php\">Add new movie</a>";
 
 if ($found_movies) {
 
@@ -56,8 +52,8 @@ echo $output;
 
 
 <?php
-include($files_to_load["sidebar_right"]);
-include($files_to_load["footer"]);
+include($layout_files_to_load["sidebar_right"]);
+include($layout_files_to_load["footer"]);
 ?>
 
 <?php include(LIB_PATH.DS."deinitialize.php");?>

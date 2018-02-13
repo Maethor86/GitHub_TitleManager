@@ -1,9 +1,12 @@
 <?php
 include("../private/initialize.php");
-$files_to_load = load_layout("standard");
+$layout_files_to_load = load_layout("standard");
 
-include($files_to_load["header"]);
-include($files_to_load["sidebar_left"]);
+$_SESSION["subject_id"] = NULL;
+$_SESSION["page_id"] = NULL;
+
+include($layout_files_to_load["header"]);
+include($layout_files_to_load["sidebar_left"]);
 
 if (!($session->is_logged_in() && $session->is_session_valid())) {
   redirect_to("login.php");
@@ -12,13 +15,11 @@ echo $session->session_message();
 ?>
 
 <?php
-
-$_SESSION["subject_id"] = NULL;
-$_SESSION["page_id"] = NULL;
 if (!empty($_GET["subject"])) {
 
   $subject_id = $_GET["subject"];
   $_SESSION["subject_id"] = $subject_id;
+
   // $subject = Subject::find_by_id($subject_id);
 
   switch ($subject_id) {
@@ -32,7 +33,7 @@ if (!empty($_GET["subject"])) {
       break;
 
     case "3":
-      redirect_to("search_movie.php");
+      redirect_to("movies.php");
       break;
 
     default:
@@ -67,11 +68,19 @@ elseif (!empty($_GET["page"])) {
       break;
 
     case "5":
-      redirect_to("about_php.php");
+      redirect_to("browse_movies.php");
       break;
 
     case "6":
-      redirect_to("about_php.php");
+      redirect_to("search_movie.php");
+      break;
+
+    case "7":
+      redirect_to("new_movie.php");
+      break;
+
+    case "8":
+      redirect_to("search_movie.php");
       break;
 
 
@@ -85,7 +94,15 @@ elseif (!empty($_GET["page"])) {
 
 
 else {
-  echo "hello";
+  $user = User::find_by_id($_SESSION["user_id"]);
+  echo make_page_title("Welcome!");
+  echo "Hello ".$user->get_username().", welcome to Title Manager!<br />";
+  echo "Your last login was 1 day ago.<br />";
+  echo "Navigate the site by clicking the links on the left.";
+
+
+
+
 }
 
 
@@ -102,8 +119,8 @@ else {
 ?>
 
 <?php
-include($files_to_load["sidebar_right"]);
-include($files_to_load["footer"]);
+include($layout_files_to_load["sidebar_right"]);
+include($layout_files_to_load["footer"]);
 ?>
 
 <?php include(LIB_PATH.DS."deinitialize.php");?>

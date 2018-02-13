@@ -20,8 +20,10 @@ defined("EXCEPTION_CODE_SQL_CONFIRM_QUERY") ? NULL : define("EXCEPTION_CODE_SQL_
 
 defined("EXCEPTION_CODE_FILE_NOT_FOUND") ? NULL : define("EXCEPTION_CODE_FILE_NOT_FOUND",300);
 
-// other config
+// session config
 defined("SESSION_INACTIVITY") ? NULL : define("SESSION_INACTIVITY",30*60);
 
+
+// other config
 
 ?>

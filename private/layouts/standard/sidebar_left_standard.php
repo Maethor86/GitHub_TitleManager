@@ -17,6 +17,9 @@
       if (!($admin) && $subject->is_admin()) {
         continue;
       }
+      if (!$subject->get_visible()) {
+        continue;
+      }
       // find all pages associated with subject
       $pages = Page::find_pages($subject->get_subjectid());
       $subject_menuname = $subject->get_menuname();
@@ -26,6 +29,9 @@
       }
       $output .= "><a href=\"main.php?subject=".$subject->get_subjectid()."\">$subject_menuname</a>";
       foreach ($pages as $page) {
+        if (!$page->get_visible()) {
+          continue;
+        }
         $page_menuname = $page->get_menuname();
         $page_id = $page->get_pageid();
         $output .= "<ul class=\"pages\">";

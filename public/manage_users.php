@@ -1,9 +1,7 @@
 <?php
 include("../private/initialize.php");
-$files_to_load = load_layout("standard");
-
-include($files_to_load["header"]);
-include($files_to_load["sidebar_left"]);
+$layout_files_to_load = load_layout("standard");
+// $content_files_to_load = load_contents("standard");
 
 if (!($session->is_logged_in() && $session->is_session_valid())) {
   redirect_to("login.php");
@@ -11,34 +9,42 @@ if (!($session->is_logged_in() && $session->is_session_valid())) {
 if (!$session->is_admin()) {
   redirect_to("login.php");
 }
+?>
 
+<?php
+include($layout_files_to_load["header"]);
+include($layout_files_to_load["sidebar_left"]);
 echo $session->session_message();
+// include($content_files_to_load["title"]);
 ?>
 
 <?php
 
 $users = User::find_all();
-$output  = "<ul class=\"users\">";
-$output .= "<li class=\"users\">";
-$output .= "<div><h3 class=\"users\">Username</h3></div>";
-$output .= "<div><h3 class=\"users\">Action</h3></div>";
-$output .= "</li>";
+
+$output  = "<table border=0>";
+$output .= "<tr>";
+$output .= "<th align=\"left\" width=200px>Username</th>";
+$output .= "<th align=\"left\" width=100px>Action</th>";
+$output .= "</tr>";
 foreach ($users as $user) {
-  $output .= "<li><div>";
+  $output .= "<tr><td>";
   $output .= $user->get_username();
-  $output .= "</div><div><a href=\"edit_user.php?userID=".$user->get_userid()."\">Edit</a>";
-  $output .= "</div><div><a href=\"delete_user.php?userID=".$user->get_userid()."\">Delete</a>";
-  $output .= "</div></li>";
+  $output .= "</td><td><a href=\"edit_user.php?userID=".$user->get_userid()."\">Edit</a>";
+  $output .= " <a href=\"delete_user.php?userID=".$user->get_userid()."\">Delete</a></td>";
+  $output .= "</tr>";
 }
-$output .= "</ul>";
+$output .= "</table>";
+$output .= "<br />";
+$output .= "<a href=\"new_user.php\">Add new user</a>";
+
 echo $output;
 ?>
-<a href="new_user.php">Add new user</a>
 
 
 <?php
-include($files_to_load["sidebar_right"]);
-include($files_to_load["footer"]);
+include($layout_files_to_load["sidebar_right"]);
+include($layout_files_to_load["footer"]);
 ?>
 
 <?php include(LIB_PATH.DS."deinitialize.php");?>
