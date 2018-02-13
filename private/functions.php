@@ -46,6 +46,7 @@ function load_layout($page_type) {
       $layout_files_to_load["sidebar_right"] = LAYOUT_PATH.DS."standard".DS."sidebar_right_standard.php";
       $layout_files_to_load["footer"]        = LAYOUT_PATH.DS."standard".DS."footer_standard.php";
       $layout_files_to_load["sidebar_left_back"]  = LAYOUT_PATH.DS."sidebar_left_back.php";
+      $layout_files_to_load["sidebar_left_back_main"]  = LAYOUT_PATH.DS."sidebar_left_back_main.php";
       $layout_files_to_load["sidebar_left_back_search"]  = LAYOUT_PATH.DS."sidebar_left_back_search.php";
       $layout_files_to_load["sidebar_left_back_browse"]  = LAYOUT_PATH.DS."sidebar_left_back_browse.php";
       break;

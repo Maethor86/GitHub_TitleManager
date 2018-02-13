@@ -3,7 +3,7 @@ include("../private/initialize.php");
 $layout_files_to_load = load_layout("standard");
 
 include($layout_files_to_load["header"]);
-include($layout_files_to_load["sidebar_left_back"]);
+include($layout_files_to_load["sidebar_left_back_main"]);
 
 if (!($session->is_logged_in() && $session->is_session_valid())) {
   redirect_to("login.php");

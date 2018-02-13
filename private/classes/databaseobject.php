@@ -56,17 +56,28 @@ abstract class DatabaseObject {
 
 
   public static function create_by_sql($sql="", $params=array()) {
+    // assumes that a select scope_identity() as id was added to the end of the insert query
     global $database;
 
     $result = $database->query($sql, $params);
-    return $result;
+
+    sqlsrv_next_result($result);
+    sqlsrv_fetch($result);
+    $id = sqlsrv_get_field($result, 0);
+
+    return $id;
   }
 
   public static function update_by_sql($sql="", $params=array()) {
     global $database;
 
     $result = $database->query($sql, $params);
-    return $result;
+
+    sqlsrv_next_result($result);
+    sqlsrv_fetch($result);
+    $id = sqlsrv_get_field($result, 0);
+
+    return $id;
   }
 
   public static function delete_by_sql($sql="", $params=array()) {

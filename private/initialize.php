@@ -22,8 +22,14 @@ defined("PUBLIC_PATH") ? NULL : define("PUBLIC_PATH", SITE_ROOT.DS."public");
 defined("LIB_PATH") ? NULL : define("LIB_PATH", SITE_ROOT.DS."private");
 defined("CLASS_PATH") ? NULL : define("CLASS_PATH", LIB_PATH.DS."classes");
 defined("LAYOUT_PATH") ? NULL : define("LAYOUT_PATH", LIB_PATH.DS."layouts");
+defined("IMAGE_PATH") ? NULL : define("IMAGE_PATH", PUBLIC_PATH.DS."images");
+defined("POSTER_PATH") ? NULL : define("POSTER_PATH", IMAGE_PATH.DS."posters");
+defined("SITEIMAGE_PATH") ? NULL : define("SITEIMAGE_PATH", IMAGE_PATH.DS."site");
 
 defined("STYLESHEET_PATH") ? NULL : define("STYLESHEET_PATH", SITE_ROOT.DS."public".DS."stylesheets.php");
+
+// other absolute paths
+defined("CERTIFICATE_PATH") ? NULL : define("CERTIFICATE_PATH", "C:".DS."Maethor".DS."Program Filez".DS."Web Development".DS."Certificates");
 
 // ----------------
 
@@ -47,9 +53,10 @@ require_once(CLASS_PATH.DS."subject.php");
 require_once(CLASS_PATH.DS."page.php");
 require_once(CLASS_PATH.DS."mydatetime.php");
 require_once(CLASS_PATH.DS."movie.php");
+require_once(CLASS_PATH.DS."poster.php");
 
 // load other classes
-
+require_once(CLASS_PATH.DS."pagination.php");
 
 // must require now, but want to get rid of
 /*

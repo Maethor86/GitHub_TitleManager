@@ -97,6 +97,7 @@ else {
   $user = User::find_by_id($_SESSION["user_id"]);
   echo make_page_title("Welcome!");
   echo "Hello ".$user->get_username().", welcome to Title Manager!<br />";
+  echo "Your last login was 1 day ago.<br />";
   echo "Navigate the site by clicking the links on the left.";
 
 

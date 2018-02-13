@@ -17,7 +17,7 @@ echo make_page_title("Search Movies");
 
 <?php
 
-$message = "";
+$message = "Search results will appear here.";
 $results = "";
 if (isset($_POST["search"])) {
   $title = trim($_POST["title"]);
@@ -30,6 +30,7 @@ if (isset($_POST["search"])) {
 
     if (!empty($movie_set)) {
       // found movie
+      $message = "";
       $results  = "Movies containing '".$title."':";
       $results .= "<ul class=\"movies\">";
       foreach ($movie_set as $movie) {
@@ -42,7 +43,7 @@ if (isset($_POST["search"])) {
         $results .= $movie->get_title();
         $results .= "</a></div></li>";
       }
-      $message .= " </ul>";
+      $results .= " </ul>";
     }
     else {
       // didnt find movie

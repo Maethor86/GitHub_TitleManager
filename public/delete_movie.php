@@ -12,7 +12,6 @@ echo $session->session_message();
 ?>
 
 <?php
-
 $deleted_movie = Movie::delete($_GET["movieID"]);
 
 if ($deleted_movie) {

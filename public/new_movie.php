@@ -8,13 +8,15 @@ include($layout_files_to_load["sidebar_left"]);
 if (!($session->is_logged_in() && $session->is_session_valid())) {
   redirect_to("login.php");
 }
-echo $session->session_message();
-echo make_page_title("Add New Movie");
+// echo $session->session_message();
+// echo make_page_title("Add New Movie");
 ?>
 
 <?php
 
 $title = "";
+$results = "";
+$message = "Search results will appear here.";
 if (isset($_POST["create_movie"])) {
 
   $fields_required = array("title");
@@ -33,6 +35,112 @@ if (isset($_POST["create_movie"])) {
   }
 }
 
+if (isset($_GET["search_term"])) {
+  $fields_required = array("search_term");
+  $errors = field_validation($_GET, $fields_required, $errors);
+  if (empty($errors)) {
+    $title = $_GET["search_term"];
+
+    // $movie = Movie::find_by_id(1);
+    if (isset($_GET["page"])) {
+      $page = $_GET["page"];
+    }
+    else {
+      $page = 1;
+    }
+    $movies = Movie::search_extdb_title($title, $page);
+    if ($movies) {
+      $message = "";
+      // $results  = "<table border=1>";
+      $per_page = 10;
+      $total_results = $movies["totalResults"];
+      $pagination = new Pagination($page, $per_page, $total_results);
+
+      $from = $pagination->offset() + 1;
+      $to = $pagination->offset() + $pagination->get_perpage();
+      if ($to > $pagination->get_totalcount()) {
+        $to = $pagination->get_totalcount();
+      }
+      $results = "<div style=\"clear:both\">";
+      $results .= "Showing results " . $from . " - " . $to . " of " . $pagination->get_totalcount() . "<br />" ;
+      if ($pagination->total_pages() > 1) {
+        if ($pagination->has_previous_page()) {
+          $results .= "<a href=\"new_movie.php?search_term=" . $_GET["search_term"] . "&page=1";
+          $results .= "\">&laquo;&laquo;First</a> &nbsp;";
+
+          $results .= "<a href=\"new_movie.php?search_term=" . $_GET["search_term"] . "&page=";
+          $results .= $pagination->previous_page();
+          $results .= "\">&laquo;Previous</a>";
+        }
+        for ($i = 1; $i <= $pagination->total_pages(); $i++) {
+          if ($i == $pagination->get_currenpage()) {
+            $results .= $pagination->get_currenpage();
+          }
+          else {
+            $results .= " <a href=\"new_movie.php?search_term=" . $_GET["search_term"] . "&page=" . $i . "\">" . $i . "</a> ";
+          }
+        }
+        if ($pagination->has_next_page()) {
+          $results .= "<a href=\"new_movie.php?search_term=" . $_GET["search_term"] . "&page=";
+          $results .= $pagination->next_page();
+          $results .= "\">Next&raquo;</a> &nbsp;";
+
+          $results .= "<a href=\"new_movie.php?search_term=" . $_GET["search_term"] . "&page=";
+          $results .= $pagination->total_pages();
+          $results .= "\">Last&raquo;&raquo;</a>";
+        }
+      }
+      $results .= "</div><br />";
+      foreach ($movies["Search"] as $movie) {
+
+        $no_poster_encoded = Poster::encode_poster();
+        $caption = $movie["Title"] . " (" . $movie["Year"] . ")";
+        $new_caption = wordwrap($caption, 20, "<br />\n");
+        $results .= "<div style=\"text-align:center; display:inline-block; vertical-align:top; padding:10px\">";
+        $results .= "<a href=\"more_movie_info.php?imdbID=" . $movie["imdbID"] . "\">";
+        $results .=     "<img src=\"data:image/jpeg;base64," . Movie::url_to_image($movie["Poster"]) ."\" onerror=\"this.src='data:image/jpg;base64," . $no_poster_encoded . "'\" height=\"150\">";
+        $results .=     "<p>" . $new_caption . "</p>";
+        $results .= "</a></div>";
+      }
+      $results .= "<div style=\"clear:both\"><br /><br />";
+      $results .= "Showing results " . $from . " - " . $to . " of " . $pagination->get_totalcount() . "<br />" ;
+      if ($pagination->total_pages() > 1) {
+        if ($pagination->has_previous_page()) {
+          $results .= "<a href=\"new_movie.php?search_term=" . $_GET["search_term"] . "&page=1";
+          $results .= "\">&laquo;&laquo;First</a> &nbsp;";
+
+          $results .= "<a href=\"new_movie.php?search_term=" . $_GET["search_term"] . "&page=";
+          $results .= $pagination->previous_page();
+          $results .= "\">&laquo;Previous</a>";
+        }
+        for ($i = 1; $i <= $pagination->total_pages(); $i++) {
+          if ($i == $pagination->get_currenpage()) {
+            $results .= $pagination->get_currenpage();
+          }
+          else {
+            $results .= " <a href=\"new_movie.php?search_term=" . $_GET["search_term"] . "&page=" . $i . "\">" . $i . "</a> ";
+          }
+        }
+        if ($pagination->has_next_page()) {
+          $results .= "<a href=\"new_movie.php?search_term=" . $_GET["search_term"] . "&page=";
+          $results .= $pagination->next_page();
+          $results .= "\">Next&raquo;</a> &nbsp;";
+
+          $results .= "<a href=\"new_movie.php?search_term=" . $_GET["search_term"] . "&page=";
+          $results .= $pagination->total_pages();
+          $results .= "\">Last&raquo;&raquo;</a>";
+        }
+      }
+      $results .= "</div>";
+    }
+    else {
+      $message = "Couldn't find any movies containing '" . $title . "'.";
+    }
+   // redirect_to("new_movie.php");
+  }
+}
+
+
 
 
 ?>
@@ -40,109 +148,32 @@ if (isset($_POST["create_movie"])) {
 <?php
 echo form_errors($errors);
 
-$output  = "<form action=\"new_movie.php\" method=\"post\">";
+$output  = "<form action=\"new_movie.php\" method=\"get\">";
 $output .= "<ul class=\"form\">";
 $output .= "Title:";
 $output .= "<li class=\"form\">";
-$output .= "<div><input type=\"text\" name=\"title\" placeholder=\"Enter title...\" style=\"font-style:italic\" value=$title></div>";
-$output .= "<div><input type=\"submit\" name=\"create_movie\" value=\"Add\" /></div></li>";
+$output .= "<div><input type=\"text\" name=\"search_term\" placeholder=\"Enter title...\" style=\"font-style:italic\" value=\"".$title."\"></div>";
+$output .= "<div><input type=\"submit\" value=\"Search DB\" /></div></li>";
 $output .= "</ul></form>";
-// $output .= "<a href=\"browse_movies.php\">Cancel</a>";
+
+echo make_page_title("Add New Movie");
+echo $session->session_message();
 echo $output;
+echo "<hr />";
+echo $message;
+echo $results;
+// echo $results;
 
-/*
-
-function create_movie($post) {
-  // must remember to check if title is unique
-
-  $title = $post["title"];
-
-  $date_time_created = generate_datetime_for_sql();
-
-  $safe_title = sql_stringprep($title);
-
-  $query  = "INSERT INTO Movies (DateTimeCreated, Title)";
-  $query .= " VALUES (?, ?)";
-
-  $params = array($date_time_created, $safe_title);
-
-  try {
-    $created_movie = sql_request_query($query, $params);
-  }
-  catch (exception $e) {
-    sql_log_errors($e, sqlsrv_errors());
-    if ($e->getCode() == EXCEPTION_CODE_SQL_CONFIRM_QUERY) {
-      $_SESSION["message"] .= "A movie with that title already exists.<br />";
-    }
-    else {
-      $_SESSION["error"] .= make_exception_message_to_user($e);
-    }
-  }
-  return $created_movie;
-
-}
-*/
-
-/*
-function edit_movie($post) {
-  $movie_id = $_GET["movieID"];
-  $movie = find_movie_title_by_movie_id($movie_id);
-  if ($movie) {
-    $safe_movie_id = sql_stringprep($movie_id);
-    $safe_title = sql_stringprep($post["new_title"]);
-
-    $query  = "UPDATE Movies";
-    $query .= " SET Title = ?";
-    $query .= " WHERE MovieID = ?";
-
-    $params = array($safe_title, $safe_movie_id);
-
-    $edited_movie = sql_request_query($query, $params);
-    return $edited_movie;
-  }
-  else {
-    // i dont think this can ever happen
-    $_SESSION["message"] .= "Couldn't find movie.<br />";
-    return FALSE;
-  }
-}
-
-function delete_movie($get) {
-
-  $movie_id = $get["movieID"];
-  $movie = find_movie_by_movie_id($movie_id);
-  if ($movie) {
-
-    // if ($user["UserRoleID"] == 1) {
-    //   $_SESSION["message"] .= "Can't delete admin.<br />";
-    //   return FALSE;
-    // }
-
-    // elseif ($user_id == $_SESSION["user_id"]) {
-    //   $_SESSION["message"] .= "Can't delete the user that is logged in.<br />";
-    //   return FALSE;
-    // }
+// $output  = "<form action=\"new_movie.php\" method=\"post\">";
+// $output .= "<ul class=\"form\">";
+// $output .= "Title:";
+// $output .= "<li class=\"form\">";
+// $output .= "<div><input type=\"text\" name=\"title\" placeholder=\"Enter title...\" style=\"font-style:italic\" value=$title></div>";
+// $output .= "<div><input type=\"submit\" name=\"create_movie\" value=\"Add\" /></div></li>";
+// $output .= "</ul></form>";
+// echo $output;
 
 
-    $safe_movie_id = sql_stringprep($movie_id);
-
-    $query  = "DELETE FROM Movies";
-    $query .= " WHERE MovieID = ?";
-
-    $params = array($safe_movie_id);
-
-    $deleted_movie = sql_request_query($query, $params);
-    return $deleted_movie;
-
-  }
-  else {
-    // i dont think this can ever happen
-    $_SESSION["message"] .= "Couldn't find movie.<br />";
-    return FALSE;
-  }
-
-
-*/
 ?>
 
 <?php

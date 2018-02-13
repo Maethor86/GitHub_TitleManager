@@ -69,11 +69,16 @@ class User extends DatabaseObject {
     $query .= " (Username, HashedPassword, UserRoleID, DateTimeCreated)";
     $query .= " VALUES";
     $query .= " (?, ?, ?, ?)";
+    $query .= " SELECT SCOPE_IDENTITY AS id";
+
 
     $params = array($post["username"], $hashed_password, $userroleid, generate_datetime_for_sql());
 
-    $created_user = self::create_by_sql($query, $params);
-    return $created_user;
+    $user_id = self::create_by_sql($query, $params);
+
+    $user = User::find_by_id($user_id);
+
+    return $user;
   }
 
   public function update($post, $user_id=0) {
