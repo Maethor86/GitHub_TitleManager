@@ -17,9 +17,15 @@ if (!($session->is_logged_in() && $session->is_session_valid())) {
 
 if (isset($_POST["add_movie_to_local_db"])) {
 
-  $movie = Movie::create_from_imdbid($_GET["imdbID"]);
+  $movie = Movie::create_from_imdbid($_GET["imdbID"], $_POST["status"], $_POST["quality"]);
   if ($movie) {
-    $poster = Poster::save($movie->get_posterurl(),$_GET["imdbID"],$movie);
+    try {
+      $poster = Poster::save($movie->get_posterurl(),$_GET["imdbID"],$movie);
+    }
+    catch (Exception $e) {
+
+    }
+
     $_SESSION["message"] .= "The movie '" . $movie->get_title() . "' was added to the local db.";
     echo "<script language=javascript>window.history.go(-2);</script>";
   }
@@ -38,7 +44,6 @@ if (isset($_GET["imdbID"])) {
     $movie = Movie::search_extdb_imdbid($_GET["imdbID"]);
     if ($movie) {
       $in_local_db = Movie::find_movie_by_imdbid($movie->get_imdbid());
-      // $no_poster = Movie::no_poster();
 
       $output .= "<a href=\"http://www.imdb.com/title/" . $movie->get_imdbid() . "\">";
       $output .= "<h2>".$movie->get_title() . " (" . $movie->get_releasedyear() . ")</h2>";
@@ -73,17 +78,42 @@ if (isset($_GET["imdbID"])) {
 
       $actions .= "<i style=\"color:darkred\">In local DB: ";
       if ($in_local_db) {
-        $actions .= "Yes";
+        $actions .= "Yes. List: <br />";
+        foreach ($in_local_db as $local_movie) {
+          $actions .= "&nbsp;" . $local_movie->get_title();
+          $actions .= " (" . Moviestatus::find_by_id($local_movie->get_moviestatusid())->get_description() . ", ";
+          $actions .= Moviequality::find_by_id($local_movie->get_moviequalityid())->get_description() . ")";
+          $actions .= "<br />";
+        }
+
       }
       else {
         $actions .= "No";
       }
       $actions .= "</i> ";
-      if (!$in_local_db) {
+      // if (!$in_local_db) {
         $actions .= "<form action=\"more_movie_info.php?imdbID=" . $_GET["imdbID"] . "\" method=\"POST\">";
+        $actions .= "<ul class=\"form\">";
+        $actions .= "<li class=\"form\">";
+        $actions .= "<div><select name=\"status\"/>";
+        $moviestati = Moviestatus::find_all();
+        foreach ($moviestati as $moviestatus) {
+          $actions .= "<option value=\"" . $moviestatus->get_moviestatusid() . "\">" . $moviestatus->get_description() . "</option>";
+        }
+        $actions .= "</select>";
+        $actions .= "</div>";
+        $actions .= "<div><select name=\"quality\"/>";
+        $moviequalities = Moviequality::find_all();
+        foreach ($moviequalities as $moviequality) {
+          $actions .= "<option value=\"" . $moviequality->get_moviequalityid() . "\">" . $moviequality->get_description() . "</option>";
+        }
+        $actions .= "</select>";
+        $actions .= "</div>";
         $actions .= "<input type=\"submit\" name=\"add_movie_to_local_db\" value=\"Add to local db\" />";
+        $actions .= "</li>";
+        $actions .= "</ul>";
         $actions .= "</form>";
-      }
+      // }
     }
 
   // }
@@ -100,6 +130,7 @@ else {
 <?php
 echo $session->session_message();
 echo make_page_title("Movie Info");
+
 echo $output;
 echo "<hr />";
 echo $actions;

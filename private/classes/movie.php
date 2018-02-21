@@ -26,6 +26,8 @@ class Movie extends DatabaseObject {
   protected $Cast;
   protected $PosterURL;
 
+  protected $MoviestatusID;
+  protected $MoviequalityID;
 
   // -------------------------------
   public function get_movieid() {
@@ -181,6 +183,25 @@ class Movie extends DatabaseObject {
     }
   }
 
+  public function get_moviestatusid() {
+    if (isset($this->MoviestatusID)) {
+      return $this->MoviestatusID;
+    }
+    else {
+      return "";
+    }
+  }
+
+  public function get_moviequalityid() {
+    if (isset($this->MoviequalityID)) {
+      return $this->MoviequalityID;
+    }
+    else {
+      return "";
+    }
+  }
+
+
 
 
   public function get_runningtime_hours() {
@@ -190,6 +211,10 @@ class Movie extends DatabaseObject {
     return array($hours,$remaining_minutes);
   }
 
+  public function get_posterfilename() {
+    return $this->get_imdbid();
+    // return $this->get_moviestatusid() . $this->get_moviequalityid() . $this->get_imdbid();
+  }
 
 
   public static function search_extdb_title($title, $page) {
@@ -304,17 +329,17 @@ class Movie extends DatabaseObject {
 
 
 
-  public static function create_from_imdbid($imdbid) {
+  public static function create_from_imdbid($imdbid, $status=1, $quality=1) {
 
     $movie = Movie::search_extdb_imdbid($imdbid);
 
     $query  = "INSERT INTO " . self::$table_name;
-    $query .= " (DateTimeCreated, CreatedByUser, Title, IMDBID, IMDBRating, RunningTime, IMDBVotes, PlotSummary, Plot, ReleasedYear, Language, Country, Genre, Director, Cast, PosterURL)";
+    $query .= " (DateTimeCreated, CreatedByUser, Title, IMDBID, IMDBRating, RunningTime, IMDBVotes, PlotSummary, Plot, ReleasedYear, Language, Country, Genre, Director, Cast, PosterURL, MoviestatusID, MoviequalityID)";
     $query .= " VALUES";
-    $query .= " (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    $query .= " (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
     $query .= "; SELECT SCOPE_IDENTITY() AS id";
 
-    $params = array(generate_datetime_for_sql(),$_SESSION["user_id"],$movie->get_title(),$movie->get_imdbid(),$movie->get_imdbrating(),$movie->get_runningtime(),$movie->get_imdbvotes(),$movie->get_plotsummary(),$movie->get_plot(),$movie->get_releasedyear(),$movie->get_language(),$movie->get_country(),$movie->get_genre(),$movie->get_director(),$movie->get_cast(),$movie->get_posterurl());
+    $params = array(generate_datetime_for_sql(),$_SESSION["user_id"],$movie->get_title(),$movie->get_imdbid(),$movie->get_imdbrating(),$movie->get_runningtime(),$movie->get_imdbvotes(),$movie->get_plotsummary(),$movie->get_plot(),$movie->get_releasedyear(),$movie->get_language(),$movie->get_country(),$movie->get_genre(),$movie->get_director(),$movie->get_cast(),$movie->get_posterurl(),$status,$quality);
 
     $createdmovie_id = self::create_by_sql($query, $params);
 
@@ -356,6 +381,33 @@ class Movie extends DatabaseObject {
     }
   }
 
+  public function update_movieoptions($movie_id=0, $status=0, $quality=0) {
+
+    $movie = Movie::find_by_id($movie_id);
+
+    if ($movie) {
+      $query  = "UPDATE " . self::$table_name;
+      $query .= " SET MoviestatusID = ?, MoviequalityID = ?";
+      $query .= " WHERE";
+      $query .= " MovieID = ?";
+      $query .= " SELECT TOP 1 * FROM " . self::$table_name . " WHERE MovieID = ?";
+
+      $params = array($status, $quality,$movie_id,$movie_id);
+
+      $updatedmovie_id = self::update_by_sql($query, $params);
+
+      $updatedmovie = Movie::find_by_id($updatedmovie_id);
+
+      return $updatedmovie;
+    }
+    else {
+      return FALSE;
+    }
+  }
+
+
+
+
   public static function delete($movie_id=0) {
 
     // first delete the poster for the movie
@@ -385,32 +437,53 @@ class Movie extends DatabaseObject {
   public static function find_movie_by_imdbid($imdbid) {
 
     // returns a movie if successful, or FALSE if unsuccessful
-    $query = "SELECT TOP 1 * FROM " . self::$table_name . " WHERE IMDBID = ? ";
+    // $query = "EXEC find_movie_by_imdbid @imdbid = ?";
+    $query  = "SELECT * FROM " . self::$table_name . " WHERE IMDBID = ?";
+    // $query .= " AND IMDBID = ? ";
+
     $params = array($imdbid);
+    // $params = array(array($imdbid, SQLSRV_PARAM_IN));
+
     $movie_array = self::find_by_sql($query, $params);
-    return (!empty($movie_array)) ? array_shift($movie_array) : FALSE;
+    return $movie_array;
+    // return (!empty($movie_array)) ? array_shift($movie_array) : FALSE;
 
   }
 
-  public static function find_movie_set_by_title($title) {
+  public static function find_movie_set_by_title($title, $status="all", $quality="all", $sortingid=1, $per_page=10, $offset=10) {
     // returns array with the movies that contains title
 
     // want to use contains instead of like, but needs configuring
     // like is much slower than contains
     // $query .= "WHERE CONTAINS(Title, ?)";
-    $query  = "SELECT * FROM " . self::$table_name;
-    $query .= " WHERE Title LIKE ?";
-    $query .= " ORDER BY Title ASC";
-
     $title = "%" . $title . "%";
     $params = array($title);
+    $sorting = Moviesorting::find_by_id($sortingid);
 
-    $movie_set = NULL;
+    $query  = "SELECT * FROM " . self::$table_name;
+    $query .= " WHERE Title LIKE ?";
+    if (!($status == "all")) {
+      $query .= " AND MoviestatusID = ?";
+      array_push($params, $status);
+    }
+    if (!($quality == "all")) {
+      $query .= " AND MoviequalityID = ?";
+      array_push($params, $quality);
+    }
+
+    $query .= " ORDER BY " . $sorting->get_sorttype();
+    $query .= " OFFSET ? ROWS";
+    $query .= " FETCH NEXT ? ROWS ONLY";
+
+    array_push($params, $offset, $per_page);
+
+    // $movie_set = NULL;
     try {
       $movie_set = self::find_by_sql($query, $params);
+      return $movie_set;
     }
     catch (exception $e) {
-      echo "Exception.";
+      echo "Exception. " . $e->getMessage();
       /*
       sql_log_errors($e, sqlsrv_errors());
       if ($e->getCode() == EXCEPTION_CODE_SQL_CONFIRM_QUERY) {
@@ -421,7 +494,6 @@ class Movie extends DatabaseObject {
       }
       */
     }
-    return $movie_set;
   }
 
   public static function find_all_movies() {
@@ -452,9 +524,42 @@ class Movie extends DatabaseObject {
   }
 
 
+  public static function count_movie_set_by_title($title, $status="all", $quality="all") {
+    // returns array with the movies that contains title
+
+    // want to use contains instead of like, but needs configuring
+    // like is much slower than contains
+    // $query .= "WHERE CONTAINS(Title, ?)";
+    $query  = "SELECT COUNT (MovieID)";
+    $query .= "FROM " . self::$table_name;
+    $query .= " WHERE Title LIKE ?";
+    if (!($status == "all")) {
+      $query .= " AND MoviestatusID = ?";
+    }
+    if (!($quality == "all")) {
+      $query .= " AND MoviequalityID = ?";
+    }
+
+    $title = "%" . $title . "%";
+    $params = array($title);
+    if (!($status == "all")) {
+      array_push($params, $status);
+    }
+    if (!($quality == "all")) {
+      array_push($params, $quality);
+    }
+
+    global $database;
+    $result_set = $database->query($query, $params);
+    $count = $database->fetch_array($result_set);
+    return array_shift($count);
+  }
+
+
+
   public static function url_to_image($url) {
 
-    if ($url == "N/A") {
+    if ($url == "N/A" || empty($url)) {
       $image = file_get_contents(SITEIMAGE_PATH.DS. "no_poster.jpg");
       $image_encoded = base64_encode($image);
       return $image_encoded;

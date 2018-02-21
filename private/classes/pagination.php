@@ -15,7 +15,7 @@ class Pagination {
     $this->total_count = (int)$total_count;
   }
 
-  public function get_currenpage() {
+  public function get_currentpage() {
     return $this->current_page;
   }
 
@@ -28,7 +28,7 @@ class Pagination {
   }
 
   public function offset() {
-    return ($this->get_currenpage() - 1) * $this->get_perpage();
+    return ($this->get_currentpage() - 1) * $this->get_perpage();
   }
 
   public function total_pages() {
@@ -36,11 +36,11 @@ class Pagination {
   }
 
   public function previous_page() {
-    return $this->get_currenpage() - 1;
+    return $this->get_currentpage() - 1;
   }
 
   public function next_page() {
-    return $this->get_currenpage() + 1;
+    return $this->get_currentpage() + 1;
   }
 
   public function has_previous_page() {

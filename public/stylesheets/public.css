@@ -219,3 +219,31 @@ li.page_header {
   margin: 0;
   display: table-row;
 }
+
+
+
+.smallicon {
+  z-index: 2;
+  position: relative;
+  right: 45px;
+  bottom: 120px;
+  /* right:30px; */
+  /* height: 30px; */
+}
+.poster_thumbnail {
+  position: relative;
+  z-index: 1;
+}
+
+.icon {
+  z-index: 2;
+  position: relative;
+  left: 0px;
+  bottom: 505px;
+  /* right:30px; */
+  /* height: 30px; */
+}
+.poster {
+  position: relative;
+  z-index: 1;
+}

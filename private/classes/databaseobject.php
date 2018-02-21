@@ -54,6 +54,18 @@ abstract class DatabaseObject {
     }
   }
 
+  public static function count_all() {
+    global $database;
+    $called_class = get_called_class();
+    $query  = "SELECT COUNT (" . $called_class::$table_id_name . ")";
+    $query .= "FROM " . $called_class::$table_name;
+
+    $params = array();
+
+    $result_set = $database->query($query, $params);
+    $count = $database->fetch_array($result_set);
+    return array_shift($count);
+  }
 
   public static function create_by_sql($sql="", $params=array()) {
     // assumes that a select scope_identity() as id was added to the end of the insert query

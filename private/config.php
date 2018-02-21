@@ -8,7 +8,7 @@ date_default_timezone_set("Europe/Oslo");
 defined("DB_SERVER") ? NULL : define("DB_SERVER","H710-MAETHOR\SQLEXPRESS");
 defined("DB_DATABASE") ? NULL : define("DB_DATABASE","TestDatabase");
 defined("DB_USER") ? NULL : define("DB_USER","TestLogin");
-defined("DB_PASS") ? NULL : define("DB_PASS","TestLogin2");
+defined("DB_PASS") ? NULL : define("DB_PASS","TestLogin1");
 
 
 defined("SQL_DATETIME_FRAC_SEC_PRECISION") ? NULL : define("SQL_DATETIME_FRAC_SEC_PRECISION", 7);

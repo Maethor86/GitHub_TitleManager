@@ -91,7 +91,7 @@ class Poster extends DatabaseObject {
 
 
   public static function find_poster_by_movieid($movieid) {
-
+      // should i have filename as tt... or more unique? now its a little of both
     // returns a poster if successful, or FALSE if unsuccessful
 
     // check if poster is in db
@@ -134,6 +134,20 @@ class Poster extends DatabaseObject {
     }
   }
 
+  public static function encode_icon($icon_filename="none", $icon_filetype="none") {
+
+    $icon_on_disk = file_exists(SITEIMAGE_PATH.DS.$icon_filename ."." . $icon_filetype);
+    if ($icon_on_disk) {
+      $image = file_get_contents(SITEIMAGE_PATH.DS.$icon_filename ."." . $icon_filetype);
+      $image_encoded = base64_encode($image);
+      return $image_encoded;
+    }
+    else {
+      $image = file_get_contents(SITEIMAGE_PATH.DS. "unknown_quality-logo.jpg");
+      $image_encoded = base64_encode($image);
+      return $image_encoded;
+    }
+  }
 
 
   public static function save($url,$filename,$movie) {
@@ -162,7 +176,7 @@ class Poster extends DatabaseObject {
       $query .= " (?, ?, ?, ?, ?, ?, ?)";
       $query .= " SELECT SCOPE_IDENTITY() AS id";
 
-      $params = array(generate_datetime_for_sql(),$_SESSION["user_id"], $movie->get_movieid(),$movie->get_imdbid(),"jpg",strlen($image),$movie->get_title());
+      $params = array(generate_datetime_for_sql(),$_SESSION["user_id"], $movie->get_movieid(),$movie->get_posterfilename(),"jpg",strlen($image),$movie->get_title());
 
       $poster_id = self::create_by_sql($query, $params);
 

@@ -41,7 +41,6 @@ if (isset($_GET["search_term"])) {
   if (empty($errors)) {
     $title = $_GET["search_term"];
 
-    // $movie = Movie::find_by_id(1);
     if (isset($_GET["page"])) {
       $page = $_GET["page"];
     }
@@ -62,7 +61,7 @@ if (isset($_GET["search_term"])) {
         $to = $pagination->get_totalcount();
       }
       $results = "<div style=\"clear:both\">";
-      $results .= "Showing results " . $from . " - " . $to . " of " . $pagination->get_totalcount() . "<br />" ;
+      $results .= "Showing results " . $from . " - " . $to . " of " . $pagination->get_totalcount() . " (" . $pagination->total_pages() . " pages) <br />" ;
       if ($pagination->total_pages() > 1) {
         if ($pagination->has_previous_page()) {
           $results .= "<a href=\"new_movie.php?search_term=" . $_GET["search_term"] . "&page=1";
@@ -73,11 +72,14 @@ if (isset($_GET["search_term"])) {
           $results .= "\">&laquo;Previous</a>";
         }
         for ($i = 1; $i <= $pagination->total_pages(); $i++) {
-          if ($i == $pagination->get_currenpage()) {
-            $results .= $pagination->get_currenpage();
+          if ($i == $pagination->get_currentpage()) {
+            $results .= $pagination->get_currentpage();
           }
-          else {
+          elseif ($i < $pagination->get_currentpage()+5 && $i > $pagination->get_currentpage()-5) {
             $results .= " <a href=\"new_movie.php?search_term=" . $_GET["search_term"] . "&page=" . $i . "\">" . $i . "</a> ";
+          }
+          elseif ($i == $pagination->get_currentpage()+5 || $i == $pagination->get_currentpage()-5) {
+            $results .= "... ";
           }
         }
         if ($pagination->has_next_page()) {
@@ -103,7 +105,7 @@ if (isset($_GET["search_term"])) {
         $results .= "</a></div>";
       }
       $results .= "<div style=\"clear:both\"><br /><br />";
-      $results .= "Showing results " . $from . " - " . $to . " of " . $pagination->get_totalcount() . "<br />" ;
+      $results .= "Showing results " . $from . " - " . $to . " of " . $pagination->get_totalcount() . " (" . $pagination->total_pages() . " pages) <br />" ;
       if ($pagination->total_pages() > 1) {
         if ($pagination->has_previous_page()) {
           $results .= "<a href=\"new_movie.php?search_term=" . $_GET["search_term"] . "&page=1";
@@ -114,11 +116,14 @@ if (isset($_GET["search_term"])) {
           $results .= "\">&laquo;Previous</a>";
         }
         for ($i = 1; $i <= $pagination->total_pages(); $i++) {
-          if ($i == $pagination->get_currenpage()) {
-            $results .= $pagination->get_currenpage();
+          if ($i == $pagination->get_currentpage()) {
+            $results .= $pagination->get_currentpage();
           }
-          else {
+          elseif ($i < $pagination->get_currentpage()+5 && $i > $pagination->get_currentpage()-5) {
             $results .= " <a href=\"new_movie.php?search_term=" . $_GET["search_term"] . "&page=" . $i . "\">" . $i . "</a> ";
+          }
+          elseif ($i == $pagination->get_currentpage()+5 || $i == $pagination->get_currentpage()-5) {
+            $results .= "... ";
           }
         }
         if ($pagination->has_next_page()) {
@@ -131,7 +136,7 @@ if (isset($_GET["search_term"])) {
           $results .= "\">Last&raquo;&raquo;</a>";
         }
       }
-      $results .= "</div>";
+      $results .= "</div><br />";
     }
     else {
       $message = "Couldn't find any movies containing '" . $title . "'.";

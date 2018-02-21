@@ -54,6 +54,9 @@ require_once(CLASS_PATH.DS."page.php");
 require_once(CLASS_PATH.DS."mydatetime.php");
 require_once(CLASS_PATH.DS."movie.php");
 require_once(CLASS_PATH.DS."poster.php");
+require_once(CLASS_PATH.DS."moviestatus.php");
+require_once(CLASS_PATH.DS."moviequality.php");
+require_once(CLASS_PATH.DS."moviesorting.php");
 
 // load other classes
 require_once(CLASS_PATH.DS."pagination.php");

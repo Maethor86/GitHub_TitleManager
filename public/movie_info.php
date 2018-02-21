@@ -3,12 +3,11 @@ include("../private/initialize.php");
 $layout_files_to_load = load_layout("standard");
 
 include($layout_files_to_load["header"]);
-include($layout_files_to_load["sidebar_left_back_browse"]);
+include($layout_files_to_load["sidebar_left_back"]);
 
 if (!($session->is_logged_in() && $session->is_session_valid())) {
   redirect_to("login.php");
 }
-echo $session->session_message();
 ?>
 
 
@@ -19,14 +18,28 @@ if (isset($_POST["update_movie_in_local_db"])) {
   $movie = Movie::find_by_id($_GET["movieID"]);
   $updated_movie = $movie->update($movie->get_movieid());
   if ($updated_movie) {
-    $poster = Poster::save($updated_movie->get_posterurl(),$updated_movie->get_imdbid(),$updated_movie);
+    $poster = Poster::save($updated_movie->get_posterurl(),$updated_movie->get_posterfilename(),$updated_movie);
     $_SESSION["message"] .= "The movie '" . $updated_movie->get_title() . "' was updated in the local db.";
   }
   else {
     $_SESSION["message"] .= "Something went wrong. Movie was not updated.";
   }
-  redirect_to("movie_info.php?movieID=" . $movie->get_movieid());
+  redirect_to("browse_movies.php");
 }
+
+if (isset($_POST["update_movie_options"])) {
+
+  $movie = Movie::find_by_id($_GET["movieID"]);
+  $updated_movie = $movie->update_movieoptions($movie->get_movieid(),$_POST["status"],$_POST["quality"]);
+  if ($updated_movie) {
+    $_SESSION["message"] .= "Options for the movie '" . $updated_movie->get_title() . "' was updated in the local db.";
+  }
+  else {
+    $_SESSION["message"] .= "Something went wrong. Movie was not updated.";
+  }
+  redirect_to("browse_movies.php");
+}
+
 
 if (isset($_GET["movieID"])) {
   $movie = Movie::find_by_id($_GET["movieID"]);
@@ -44,9 +57,26 @@ if (isset($_GET["movieID"])) {
     $output  = "<a href=\"http://www.imdb.com/title/" . $movie->get_imdbid() . "\">";
     $output .= "<h2>".$movie->get_title() . " (" . $movie->get_releasedyear() . ")</h2>";
 
-    $local_db_img = base64_encode(file_get_contents(SITEIMAGE_PATH.DS."database_local01.jpg"));
+    $local_db_img_encoded = base64_encode(file_get_contents(SITEIMAGE_PATH.DS."database_local01.jpg"));
 
-    $output .= "<image style=\"float:right\" src=\"data:image/jpg;base64," . $local_db_img . "\" height=\"100px\">";
+    $local_db_img  = "<image style=\"float:right\" src=\"data:image/jpg;base64," . $local_db_img_encoded . "\" height=\"100px\">";
+
+    $moviequality = $movie->get_moviequalityid();
+    switch ($moviequality) {
+      case '1':
+        $icon = "blu_ray-logo";
+        $icon_type = "jpg";
+        break;
+      case '2':
+        $icon = "dvd-logo";
+        $icon_type = "jpg";
+        break;
+
+      default:
+        $icon = "unknown_quality-logo";
+        $icon_type = "jpg";
+        break;
+    }
 
     $output .= "</a>";
     $output .= "<table border=0>";
@@ -54,7 +84,8 @@ if (isset($_GET["movieID"])) {
     $output .= "</tr>";
     $output .= "<tr>";
     $output .= "<td><a href=\"http://www.imdb.com/title/" . $movie->get_imdbid() . "\">";
-    $output .= "<image src=\"data:image/jpg;base64," . $poster_encoded . "\" height=\"500px\" title=\"" . $mouseovertitle . "\" />"; //onerror=\"this.src='data:image/jpg;base64," . Movie::no_poster() . "'\"
+    $output .= "<image src=\"data:image/jpg;base64," . $poster_encoded . "\" height=\"500px\" class=\"poster\" title=\"" . $mouseovertitle . "\" />"; //onerror=\"this.src='data:image/jpg;base64," . Movie::no_poster() . "'\"
+    $output .= "<img src=\"data:image/jpeg;base64," . Poster::encode_icon($icon,$icon_type) ."\" height=\"30px\" class=\"icon\">";  // ***
     $output .= "</a></td>";
     $output .= "<td>";
     $output .= "<h4>Plot Summary: </h4>".$movie->get_plotsummary()."<br /><br />";
@@ -72,26 +103,53 @@ if (isset($_GET["movieID"])) {
     $output .= "</tr>";
     $output .= "</table>";
 
-    $actions  = "<ul class=\"form\">";
-    $actions .= "<li class=\"form\">";
-    $actions .= "<div>";
-    if (1) {
-      $actions .= "<form action=\"movie_info.php?movieID=" . $movie->get_movieid() . "\" method=\"POST\">";
-      $actions .= "<input type=\"submit\" name=\"update_movie_in_local_db\" value=\"Update movie\" />";
-      $actions .= "</form>";
-    }
-    $actions .= "</div>";
-    $actions .= "</li>";
-    $actions .= "<li class=\"form\">";
-    $actions .= "<div>";
-    $actions .= "<a href=\"delete_movie.php?movieID=";
+    $update_from_imdb  = "<form action=\"movie_info.php?movieID=" . $movie->get_movieid() . "\" method=\"POST\" style=\"clear:both; float:right\">";
+    $update_from_imdb .= "<input type=\"submit\" name=\"update_movie_in_local_db\" value=\"Update from IMDB\" />";
+    $update_from_imdb .= "</form>";
+    $actions  = "<a href=\"delete_movie.php?movieID=";
     $actions .= $movie->get_movieid();
-    $actions .= "\">";
+    $actions .= "\" style=\"clear:both; float:right\">";
     $actions .= "Delete";
     $actions .= "</a>";
-    $actions .= "</div>";
-    $actions .= "</li>";
-    $actions .= "</ul>";
+
+    $current_moviestatus = Moviestatus::find_by_id($movie->get_moviestatusid());
+
+    $info_moviestatus  = "Status &nbsp;";
+    $info_moviestatus .= "<select name=\"status\"/>";
+    $moviestati = Moviestatus::find_all();
+    foreach ($moviestati as $moviestatus) {
+      $info_moviestatus .= "<option value=\"" . $moviestatus->get_moviestatusid() . "\" ";
+      if ($current_moviestatus->get_moviestatusid() == $moviestatus->get_moviestatusid()) {
+        $info_moviestatus .= "selected=\"selected\"";
+      }
+      $info_moviestatus .= ">" . $moviestatus->get_description() . "</option>";
+    }
+    $info_moviestatus .= "</select>";
+    $info_moviestatus .= "";
+
+    $current_moviequality = Moviequality::find_by_id($movie->get_moviequalityid());
+    $info_moviequality  = "Quality &nbsp;";
+    $info_moviequality .= "<select name=\"quality\"/>";
+    $moviequalities = Moviequality::find_all();
+    foreach ($moviequalities as $moviequality) {
+      $info_moviequality .= "<option value=\"" . $moviequality->get_moviequalityid() . "\" ";
+      if ($current_moviequality->get_moviequalityid() == $moviequality->get_moviequalityid()) {
+        $info_moviequality .= "selected=\"selected\"";
+      }
+      $info_moviequality .= ">" . $moviequality->get_description() . "</option>";
+    }
+    $info_moviequality .= "</select>";
+    $info_moviequality .= "";
+
+    $form_update_options  = "<form action=\"movie_info.php?movieID=" . $movie->get_movieid() . "\" method=\"POST\">";
+    $form_update_options .= $info_moviestatus;
+    $form_update_options .= " &nbsp; | &nbsp; ";
+    $form_update_options .= $info_moviequality;
+    $form_update_options .= " &nbsp; | &nbsp;";
+    $form_update_options .= "<input type=\"submit\" name=\"update_movie_options\" value=\"Update\" />";
+    $form_update_options .= "</form>";
+
+
   }
 }
 else {
@@ -102,9 +160,22 @@ else {
 
 
 <?php
+echo $session->session_message();
+
+echo $local_db_img;
+echo $update_from_imdb;
+echo $actions;
 echo $output;
 echo "<hr />";
-echo $actions;
+echo $form_update_options;
+// echo "<ul style=\"float: right\">";
+// echo "<li class=\"form\">";
+// echo $info_moviestatus;
+// echo "<div>|</div>";
+// echo $info_moviequality;
+// echo "</li>";
+// echo "</ul>";
+
 ?>
 
 
