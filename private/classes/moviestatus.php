@@ -4,7 +4,7 @@ require_once(CLASS_PATH.DS."sqlserverdatabase.php");
 
 class Moviestatus extends DatabaseObject {
 
-  protected static $table_name = "Moviestatus";
+  protected static $table_name = "Moviestatuses";
   protected static $table_id_name = "MoviestatusID";
 
   protected $MoviestatusID;
@@ -27,6 +27,10 @@ class Moviestatus extends DatabaseObject {
     else {
       return "";
     }
+  }
+
+  public static function get_loanedoutmoviestatusid() {
+    return 2;
   }
 
 }

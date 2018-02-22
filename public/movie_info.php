@@ -29,8 +29,18 @@ if (isset($_POST["update_movie_in_local_db"])) {
 
 if (isset($_POST["update_movie_options"])) {
 
+  if (isset($_POST["new_loaner"]) && !(empty($_POST["new_loaner"]))) {
+    $loaner_id = Loaner::create($_POST["new_loaner"])->get_loanerid();
+  }
+  elseif (isset($_POST["loaners"])) {
+    $loaner_id = $_POST["loaners"];
+  }
+  else {
+    $loaner_id = FALSE;
+  }
+
   $movie = Movie::find_by_id($_GET["movieID"]);
-  $updated_movie = $movie->update_movieoptions($movie->get_movieid(),$_POST["status"],$_POST["quality"]);
+  $updated_movie = $movie->update_movieoptions($movie->get_movieid(),$_POST["status"],$_POST["quality"], $loaner_id);
   if ($updated_movie) {
     $_SESSION["message"] .= "Options for the movie '" . $updated_movie->get_title() . "' was updated in the local db.";
   }
@@ -61,6 +71,7 @@ if (isset($_GET["movieID"])) {
 
     $local_db_img  = "<image style=\"float:right\" src=\"data:image/jpg;base64," . $local_db_img_encoded . "\" height=\"100px\">";
 
+    $current_moviestatus = Moviestatus::find_by_id($movie->get_moviestatusid());
     $moviequality = $movie->get_moviequalityid();
     switch ($moviequality) {
       case '1':
@@ -88,17 +99,24 @@ if (isset($_GET["movieID"])) {
     $output .= "<img src=\"data:image/jpeg;base64," . Poster::encode_icon($icon,$icon_type) ."\" height=\"30px\" class=\"icon\">";  // ***
     $output .= "</a></td>";
     $output .= "<td>";
-    $output .= "<h4>Plot Summary: </h4>".$movie->get_plotsummary()."<br /><br />";
+    $output .= "<h4>About</h4>";
+    $output .= "Status: ".$current_moviestatus->get_description();
+    if ($current_moviestatus->get_moviestatusid() == Moviestatus::get_loanedoutmoviestatusid()) {
+      $loaner = Loaner::find_by_id(Movieloan::find_by_movieid($movie->get_movieid())->get_loanerid());
+      $output .= " to ";
+      $output .= $loaner->get_description();
+    }
+    $output .= "<br />";
+    $output .= "Quality: ".Moviequality::find_by_id($moviequality)->get_description()."<br />";
+    $output .= "<h4>Plot Summary </h4>".$movie->get_plotsummary()."<br /><br />";
     $output .= "Year: ".$movie->get_releasedyear()."<br />";
     $output .= "IMDB Rating: ".$movie->get_imdbrating()."/10<br />";
     $output .= "Votes: ".$movie->get_imdbvotes()."<br />";
     $output .= "Runtime: ".$movie->get_runningtime()." min (".$movie->get_runningtime_hours()[0]."h ".$movie->get_runningtime_hours()[1]."min)<br />";
-    $output .= "Language ".$movie->get_language()."<br /><br />";
+    $output .= "Language: ".$movie->get_language()."<br /><br />";
     $output .= "Country: ".$movie->get_country()."<br />";
     $output .= "Genre: ".$movie->get_genre()."<br />";
     $output .= "Director: ".$movie->get_director()."<br /><br />";
-    $output .= "<h4>Plot: </h4>".$movie->get_plot()."<br /><br />";
-    $output .= "<h4>Cast:</h4> ".$movie->get_cast()."<br /><br /><br />";
     $output .= "</td>";
     $output .= "</tr>";
     $output .= "</table>";
@@ -112,20 +130,27 @@ if (isset($_GET["movieID"])) {
     $actions .= "Delete";
     $actions .= "</a>";
 
-    $current_moviestatus = Moviestatus::find_by_id($movie->get_moviestatusid());
-
     $info_moviestatus  = "Status &nbsp;";
-    $info_moviestatus .= "<select name=\"status\"/>";
-    $moviestati = Moviestatus::find_all();
-    foreach ($moviestati as $moviestatus) {
-      $info_moviestatus .= "<option value=\"" . $moviestatus->get_moviestatusid() . "\" ";
-      if ($current_moviestatus->get_moviestatusid() == $moviestatus->get_moviestatusid()) {
-        $info_moviestatus .= "selected=\"selected\"";
+    $info_moviestatus .= "<select name=\"status\" id=\"status\" />";
+    $moviestatuses = Moviestatus::find_all();
+    $info_moviestatus .= "<option value=\"0\" hidden>" . $current_moviestatus->get_description() . "</option>";
+    foreach ($moviestatuses as $moviestatus) {
+      if (!($current_moviestatus->get_moviestatusid() == $moviestatus->get_moviestatusid())) {
+        $info_moviestatus .= "<option value=\"" . $moviestatus->get_moviestatusid() . "\" >" . $moviestatus->get_description() . "</option>";
       }
-      $info_moviestatus .= ">" . $moviestatus->get_description() . "</option>";
     }
     $info_moviestatus .= "</select>";
-    $info_moviestatus .= "";
+
+    $info_loan  = "<select name=\"loaners\" id=\"loaners\" class=\"hidden\" />";
+    $loaners = Loaner::find_all();
+    $info_loan .= "<option value=\"\" hidden>Please choose...</option>";
+    foreach ($loaners as $loaner) {
+      $info_loan .= "<option value=\"" . $loaner->get_loanerid() . "\">" . $loaner->get_description() . "</option>";
+    }
+    $info_loan .= "<option value=\"add_loaner\">Add...</option>";
+    $info_loan .= "</select>";
+    $info_loan .= "<input type=\"text\" name=\"new_loaner\" id=\"new_loaner\" class=\"hidden\" placeholder=\"Type new loaner here...\"/>";
+    $info_loan .= "<script type=\"text/javascript\" src=\"javascripts/loaners.js\" ></script>";
 
     $current_moviequality = Moviequality::find_by_id($movie->get_moviequalityid());
     $info_moviequality  = "Quality &nbsp;";
@@ -143,7 +168,8 @@ if (isset($_GET["movieID"])) {
 
     $form_update_options  = "<form action=\"movie_info.php?movieID=" . $movie->get_movieid() . "\" method=\"POST\">";
     $form_update_options .= $info_moviestatus;
-    $form_update_options .= " &nbsp; | &nbsp; ";
+    $form_update_options .= $info_loan;
+    $form_update_options .= " &nbsp; | &nbsp;";
     $form_update_options .= $info_moviequality;
     $form_update_options .= " &nbsp; | &nbsp;";
     $form_update_options .= "<input type=\"submit\" name=\"update_movie_options\" value=\"Update\" />";
@@ -162,6 +188,7 @@ else {
 <?php
 echo $session->session_message();
 
+echo "<script type=\"text/javascript\" src=\"http://code.jquery.com/jquery-latest.min.js\"></script>";
 echo $local_db_img;
 echo $update_from_imdb;
 echo $actions;

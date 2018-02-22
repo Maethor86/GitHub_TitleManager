@@ -4,7 +4,7 @@ require_once(CLASS_PATH.DS."sqlserverdatabase.php");
 
 class Moviesorting extends DatabaseObject {
 
-  protected static $table_name = "Moviesorting";
+  protected static $table_name = "Moviesortings";
   protected static $table_id_name = "MoviesortingID";
 
   protected $MoviesortingID;

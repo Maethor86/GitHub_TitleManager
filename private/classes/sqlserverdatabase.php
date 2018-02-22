@@ -37,6 +37,9 @@ class SQLSERVERDatabase {
 
   public function query($sql, $params, $error_log=FALSE) {
 
+    // echo $sql;
+    // var_dump($params);
+
     $result_set = sqlsrv_query($this->connection, $sql, $params);
     $this->confirm_query($result_set, $error_log);
     return $result_set;

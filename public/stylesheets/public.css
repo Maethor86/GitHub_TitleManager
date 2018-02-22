@@ -247,3 +247,8 @@ li.page_header {
   position: relative;
   z-index: 1;
 }
+
+
+.hidden{
+   display:none;
+}

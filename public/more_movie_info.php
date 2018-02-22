@@ -11,14 +11,29 @@ if (!($session->is_logged_in() && $session->is_session_valid())) {
 }
 // echo $session->session_message();
 // echo make_page_title("Movie Info");
+
 ?>
 
 <?php
 
 if (isset($_POST["add_movie_to_local_db"])) {
 
+  if (isset($_POST["new_loaner"]) && !(empty($_POST["new_loaner"]))) {
+    $loaner_id = Loaner::create($_POST["new_loaner"])->get_loanerid();
+  }
+  elseif (isset($_POST["loaners"])) {
+    $loaner_id = $_POST["loaners"];
+  }
+  else {
+    $loaner_id = FALSE;
+  }
+
   $movie = Movie::create_from_imdbid($_GET["imdbID"], $_POST["status"], $_POST["quality"]);
+
   if ($movie) {
+    if ($loaner_id) {
+      $movieloan = Movieloan::create($movie->get_movieid(), $loaner_id);
+    }
     try {
       $poster = Poster::save($movie->get_posterurl(),$_GET["imdbID"],$movie);
     }
@@ -95,12 +110,24 @@ if (isset($_GET["imdbID"])) {
         $actions .= "<form action=\"more_movie_info.php?imdbID=" . $_GET["imdbID"] . "\" method=\"POST\">";
         $actions .= "<ul class=\"form\">";
         $actions .= "<li class=\"form\">";
-        $actions .= "<div><select name=\"status\"/>";
-        $moviestati = Moviestatus::find_all();
-        foreach ($moviestati as $moviestatus) {
+        $actions .= "<div><select name=\"status\" id=\"status\" />";
+        $moviestatuses = Moviestatus::find_all();
+        foreach ($moviestatuses as $moviestatus) {
           $actions .= "<option value=\"" . $moviestatus->get_moviestatusid() . "\">" . $moviestatus->get_description() . "</option>";
         }
         $actions .= "</select>";
+        $actions .= "</div>";
+        $actions .= "<div><select name=\"loaners\" id=\"loaners\" class=\"hidden\" />";
+        $loaners = Loaner::find_all();
+        $actions .= "<option value=\"\" hidden>Please choose...</option>";
+        foreach ($loaners as $loaner) {
+          $actions .= "<option value=\"" . $loaner->get_loanerid() . "\">" . $loaner->get_description() . "</option>";
+        }
+        $actions .= "<option value=\"\" hidden>---</option>";
+        $actions .= "<option value=\"add_loaner\">Add...</option>";
+        $actions .= "</select>";
+        $actions .= "<input type=\"text\" name=\"new_loaner\" id=\"new_loaner\" class=\"hidden\" placeholder=\"Type new loaner here...\" />";
+        $actions .= "<script type=\"text/javascript\" src=\"javascripts/loaners.js\" ></script>";
         $actions .= "</div>";
         $actions .= "<div><select name=\"quality\"/>";
         $moviequalities = Moviequality::find_all();
@@ -131,10 +158,10 @@ else {
 echo $session->session_message();
 echo make_page_title("Movie Info");
 
+echo "<script type=\"text/javascript\" src=\"http://code.jquery.com/jquery-latest.min.js\"></script>";
 echo $output;
 echo "<hr />";
 echo $actions;
-
 
 ?>
 

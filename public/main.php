@@ -80,7 +80,7 @@ elseif (!empty($_GET["page"])) {
       break;
 
     case "8":
-      redirect_to("search_movie.php");
+      redirect_to("loan_overview.php");
       break;
 
 
