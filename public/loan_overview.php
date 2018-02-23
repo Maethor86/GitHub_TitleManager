@@ -12,22 +12,73 @@ if (!($session->is_logged_in() && $session->is_session_valid())) {
 
 
 <?php
-$loaners = Loaner::find_all();
+$current_loans = "";
+$expanded_loan = "";
 
-$output  = "<h4>Loaners</h4>";
-foreach ($loaners as $loaner) {
-  $movieloans = $loaner->find_currentloans();
-  if (count($movieloans) > 0) {
-    
-    $output .= $loaner->get_description();
-    $output .= "(" . count($movieloans) . ")";
-    $output .= "<br />";  # code...
+
+if (isset($_GET["loaner"])) {
+  $loaner_expanded = Loaner::find_by_id($_GET["loaner"]);
+  if ($loaner_expanded) {
+    $movieloans = $loaner_expanded->find_currentloans();
+    if ($movieloans) {
+      foreach ($movieloans as $movieloan) {
+        $movie = Movie::find_by_id($movieloan->get_movieid());
+
+        $redirect_page = "loan_overview.php?loaner=" . $loaner_expanded->get_loanerid();
+
+        if (!(isset($_GET["movie"]) && $_GET["movie"] == $movie->get_movieid())) {
+          $redirect_page .= "&movie=" . $movie->get_movieid();
+        }
+        if (isset($_GET["movie"]) && $_GET["movie"] == $movie->get_movieid()) {
+          $movieloan_expanded = Movieloan::find_by_movieid($_GET["movie"]);
+          if ($movieloan_expanded) {
+              $expanded_loan .= "<br />";
+              $expanded_loan .= " &nbsp; &nbsp; Loaned by " . $loaner_expanded->get_description() . " on " . $movieloan_expanded->get_datetimeloan() . ". <br />";
+              $expanded_loan .= " &nbsp; &nbsp; The loan was registered by the user: " . User::find_by_id($movieloan_expanded->get_registeredbyuser())->get_username() . ". <br />";
+          }
+        }
+        $current_loans .= " &nbsp; ";
+        $current_loans .= "<a href=\"" . $redirect_page . "\">";
+        $current_loans .= $movie->get_title();
+        $current_loans .= "</a>";
+        $current_loans .= $expanded_loan;
+        $current_loans .= "<br />";
+
+        $expanded_loan = "";
+      }
+
+
+    }
   }
 }
-// $output .=
-// $output .=
-// $output .=
-// $output .=
+
+
+$output = "";
+$loaners = Loaner::find_all();
+if (count($loaners > 0)) {
+  $output .= "<h4>Loaners</h4>";
+  foreach ($loaners as $loaner) {
+    $movieloans = $loaner->find_currentloans();
+    if (count($movieloans) > 0) {
+      $redirect_page = "loan_overview.php";
+      if (!(isset($_GET["loaner"]) && $_GET["loaner"] == $loaner->get_loanerid())) {
+        $redirect_page .= "?loaner=" . $loaner->get_loanerid();
+      }
+      $output .= "<a href=\"" . $redirect_page . "\">";
+      $output .= $loaner->get_description();
+      $output .= "</a>";
+      $output .= " (" . count($movieloans) . ")";
+      $output .= "<br />";
+      if (isset($_GET["loaner"]) && $_GET["loaner"] == $loaner->get_loanerid()) {
+        $output .= $current_loans;
+        $output .= "<br />";
+      }
+    }
+  }
+}
+else {
+  $output .= "No movies has been loaned out.";
+}
 
 ?>
 

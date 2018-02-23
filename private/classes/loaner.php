@@ -39,7 +39,7 @@ class Loaner extends DatabaseObject {
 
     $params = array($this->get_loanerid());
 
-    $movieloans = $this->find_by_sql($query, $params);
+    $movieloans = Movieloan::find_by_sql($query, $params);
 
     return $movieloans;
 

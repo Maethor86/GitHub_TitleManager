@@ -17,8 +17,13 @@ body {
   background: #EEE4B9;
 }
 img { border: none; }
-a { color: #8D0D19 }
-a:hover { color: #1A446C}
+a {
+  color: #8D0D19;
+  text-decoration: none;
+}
+a:hover {
+  color: #1A446C;
+}
 p,h1,h2,h3 {
   margin: 0;
   padding: 0;
@@ -136,6 +141,9 @@ ul.pages {
   color: #8D0D19;
   background: #EEE4B9;
   text-decoration: none;
+}
+#info a:hover {
+  color: #1A446C;
 }
 ul.users {
   padding: 0;
