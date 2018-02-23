@@ -33,6 +33,10 @@ class Moviestatus extends DatabaseObject {
     return 2;
   }
 
+  public static function get_missingmoviestatusid() {
+    return 3;
+  }
+
 }
 
 ?>

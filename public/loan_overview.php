@@ -12,6 +12,22 @@ if (!($session->is_logged_in() && $session->is_session_valid())) {
 
 
 <?php
+$loaners = Loaner::find_all();
+
+$output  = "<h4>Loaners</h4>";
+foreach ($loaners as $loaner) {
+  $movieloans = $loaner->find_currentloans();
+  if (count($movieloans) > 0) {
+    
+    $output .= $loaner->get_description();
+    $output .= "(" . count($movieloans) . ")";
+    $output .= "<br />";  # code...
+  }
+}
+// $output .=
+// $output .=
+// $output .=
+// $output .=
 
 ?>
 
@@ -19,11 +35,7 @@ if (!($session->is_logged_in() && $session->is_session_valid())) {
 echo make_page_title("Loan Overview");
 echo $session->session_message();
 
-// echo $search_form;
-// echo "<hr />";
-// echo $message;
-// echo $loaner_list;
-
+echo $output;
 
 ?>
 

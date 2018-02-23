@@ -111,9 +111,9 @@ class Movieloan extends DatabaseObject {
 
     $updatedmovieloan_id = self::update_by_sql($query, $params);
 
-    $movieloan = Movieloan::find_by_id($updatedmovieloan_id);
+    $updatedmovieloan = Movieloan::find_by_id($updatedmovieloan_id);
 
-    return $movieloan;
+    return $updatedmovieloan;
   }
 
 }

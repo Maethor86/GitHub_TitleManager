@@ -28,12 +28,9 @@ if (isset($_POST["add_movie_to_local_db"])) {
     $loaner_id = FALSE;
   }
 
-  $movie = Movie::create_from_imdbid($_GET["imdbID"], $_POST["status"], $_POST["quality"]);
+  $movie = Movie::create_from_imdbid($_GET["imdbID"], $_POST["status"], $_POST["quality"], $loaner_id);
 
   if ($movie) {
-    if ($loaner_id) {
-      $movieloan = Movieloan::create($movie->get_movieid(), $loaner_id);
-    }
     try {
       $poster = Poster::save($movie->get_posterurl(),$_GET["imdbID"],$movie);
     }
@@ -123,7 +120,7 @@ if (isset($_GET["imdbID"])) {
         foreach ($loaners as $loaner) {
           $actions .= "<option value=\"" . $loaner->get_loanerid() . "\">" . $loaner->get_description() . "</option>";
         }
-        $actions .= "<option value=\"\" hidden>---</option>";
+        $actions .= "<option value=\"\" disabled>---</option>";
         $actions .= "<option value=\"add_loaner\">Add...</option>";
         $actions .= "</select>";
         $actions .= "<input type=\"text\" name=\"new_loaner\" id=\"new_loaner\" class=\"hidden\" placeholder=\"Type new loaner here...\" />";

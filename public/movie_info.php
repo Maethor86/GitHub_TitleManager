@@ -32,13 +32,12 @@ if (isset($_POST["update_movie_options"])) {
   if (isset($_POST["new_loaner"]) && !(empty($_POST["new_loaner"]))) {
     $loaner_id = Loaner::create($_POST["new_loaner"])->get_loanerid();
   }
-  elseif (isset($_POST["loaners"])) {
+  elseif (isset($_POST["loaners"]) && !(empty($_POST["loaners"]))) {
     $loaner_id = $_POST["loaners"];
   }
   else {
     $loaner_id = FALSE;
   }
-
   $movie = Movie::find_by_id($_GET["movieID"]);
   $updated_movie = $movie->update_movieoptions($movie->get_movieid(),$_POST["status"],$_POST["quality"], $loaner_id);
   if ($updated_movie) {
@@ -147,6 +146,7 @@ if (isset($_GET["movieID"])) {
     foreach ($loaners as $loaner) {
       $info_loan .= "<option value=\"" . $loaner->get_loanerid() . "\">" . $loaner->get_description() . "</option>";
     }
+    $info_loan .= "<option value=\"\" disabled>---</option>";
     $info_loan .= "<option value=\"add_loaner\">Add...</option>";
     $info_loan .= "</select>";
     $info_loan .= "<input type=\"text\" name=\"new_loaner\" id=\"new_loaner\" class=\"hidden\" placeholder=\"Type new loaner here...\"/>";

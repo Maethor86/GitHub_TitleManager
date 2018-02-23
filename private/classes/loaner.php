@@ -29,6 +29,22 @@ class Loaner extends DatabaseObject {
     }
   }
 
+  public function find_currentloans() {
+
+    $query  = "SELECT * FROM Movieloans";
+    $query .= " INNER JOIN Movies ON Movies.MovieID = Movieloans.MovieID ";
+    $query .= " WHERE Movieloans.LoanerID = ?";
+    $query .= " AND Movieloans.DateTimeReturn IS NULL";
+    $query .= " AND Movies.DateTimeDeleted IS NULL";
+
+    $params = array($this->get_loanerid());
+
+    $movieloans = $this->find_by_sql($query, $params);
+
+    return $movieloans;
+
+  }
+
   public static function create($description="none") {
 
     $query  = "INSERT INTO " . self::$table_name;

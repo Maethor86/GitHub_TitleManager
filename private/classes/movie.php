@@ -352,33 +352,38 @@ class Movie extends DatabaseObject {
 
 
 
-  public static function create_from_imdbid($imdbid, $status=1, $quality=1, $loanerid=FALSE) {
+  public static function create_from_imdbid($imdbid=0, $status=0, $quality=0, $loanerid=FALSE) {
 
     $movie = Movie::search_extdb_imdbid($imdbid);
 
-    $params = array(generate_datetime_for_sql(),$_SESSION["user_id"],$movie->get_title(),$movie->get_imdbid(),$movie->get_imdbrating(),$movie->get_runningtime(),$movie->get_imdbvotes(),$movie->get_plotsummary(),$movie->get_plot(),$movie->get_releasedyear(),$movie->get_language(),$movie->get_country(),$movie->get_genre(),$movie->get_director(),$movie->get_cast(),$movie->get_posterurl(),$status,$quality);
+    if ($movie) {
 
-    $query  = "INSERT INTO " . self::$table_name;
-    $query .= " (DateTimeCreated, CreatedByUser, Title, IMDBID, IMDBRating, RunningTime, IMDBVotes, PlotSummary, Plot, ReleasedYear, Language, Country, Genre, Director, Cast, PosterURL, MoviestatusID, MoviequalityID";
-    if ($loanerid) {
-      $query .= ", LoanerID";
-      array_push($params, $loanerid);
+      $params = array(generate_datetime_for_sql(),$_SESSION["user_id"],$movie->get_title(),$movie->get_imdbid(),$movie->get_imdbrating(),$movie->get_runningtime(),$movie->get_imdbvotes(),$movie->get_plotsummary(),$movie->get_plot(),$movie->get_releasedyear(),$movie->get_language(),$movie->get_country(),$movie->get_genre(),$movie->get_director(),$movie->get_cast(),$movie->get_posterurl(),$status,$quality);
+
+      $query  = "INSERT INTO " . self::$table_name;
+      $query .= " (DateTimeCreated, CreatedByUser, Title, IMDBID, IMDBRating, RunningTime, IMDBVotes, PlotSummary, Plot, ReleasedYear, Language, Country, Genre, Director, Cast, PosterURL, MoviestatusID, MoviequalityID)";
+      $query .= " VALUES";
+      $query .= " (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+      $query .= "; SELECT SCOPE_IDENTITY() AS id";
+
+
+      $createdmovie_id = self::create_by_sql($query, $params);
+
+      $createdmovie = Movie::find_by_id($createdmovie_id);
+
+      if ($status == Moviestatus::get_loanedoutmoviestatusid() && $loanerid) {
+        Movieloan::create($createdmovie->get_movieid(),$loanerid);
+      }
+
+      if ($status == Moviestatus::get_missingmoviestatusid()) {
+        Missingmovie::create($createdmovie->get_movieid());
+      }
+
+      return $createdmovie;
     }
-    $query .= ")";
-    $query .= " VALUES";
-    $query .= " (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?";
-    if ($loanerid) {
-      $query .= ", ?";
+    else {
+      return FALSE;
     }
-    $query .= ")";
-    $query .= "; SELECT SCOPE_IDENTITY() AS id";
-
-
-    $createdmovie_id = self::create_by_sql($query, $params);
-
-    $movie = Movie::find_by_id($createdmovie_id);
-
-    return $movie;
   }
 
 
@@ -424,38 +429,37 @@ class Movie extends DatabaseObject {
         return $movie;
       }
 
-      if ($status == Moviestatus::get_loanedoutmoviestatusid()) {
-        Movieloan::create($movie_id,$loanerid);
+      if ($status == Moviestatus::get_loanedoutmoviestatusid() && $loanerid) {
+        Movieloan::create($movie->get_movieid(),$loanerid);
       }
       elseif ($movie->get_moviestatusid() == Moviestatus::get_loanedoutmoviestatusid() && ($status != Moviestatus::get_loanedoutmoviestatusid()) && ($status != 0)) {
-        Movieloan::return_movieloan($movie_id);
+        Movieloan::return_movieloan($movie->get_movieid());
       }
 
-      // if ($status == 0) {
-      //   $status = $movie->get_moviestatusid();
-      // }
-      // if ($quality == 0) {
-      //   $quality = $movie->get_moviequalityid();
-      // }
+      if ($status == Moviestatus::get_missingmoviestatusid()) {
+        Missingmovie::create($movie->get_movieid());
+      }
+      elseif ($movie->get_moviestatusid() == Moviestatus::get_missingmoviestatusid() && ($status != Moviestatus::get_missingmoviestatusid()) && ($status != 0)) {
+        Missingmovie::return_missingmovie($movie->get_movieid());
+      }
 
       $params = array();
+
       $query  = "UPDATE " . self::$table_name;
       $query .= " SET";
       if ($status != 0) {
       $query .= " MoviestatusID = ?,";
         array_push($params, $status);
-        // $status = $movie->get_moviestatusid();
       }
       if ($quality != 0) {
       $query .= " MoviequalityID = ?";
         array_push($params, $quality);
-        // $status = $movie->get_moviestatusid();
       }
       $query .= " WHERE";
       $query .= " MovieID = ?";
       $query .= " SELECT TOP 1 * FROM " . self::$table_name . " WHERE MovieID = ?";
 
-      array_push($params, $movie_id,$movie_id);
+      array_push($params, $movie->get_movieid(),$movie->get_movieid());
 
       $updatedmovie_id = self::update_by_sql($query, $params);
 
