@@ -516,9 +516,9 @@ class Movie extends DatabaseObject {
   public static function find_movie_by_imdbid($imdbid) {
 
     // returns a movie if successful, or FALSE if unsuccessful
-    // $query = "EXEC find_movie_by_imdbid @imdbid = ?";
-    $query  = "SELECT * FROM " . self::$table_name . " WHERE IMDBID = ?";
-    $query .= " AND DateTimeDeleted IS NULL";
+    $query = "EXEC sp.find_movie_by_imdbid @imdbid = ?";
+    // $query  = "SELECT * FROM " . self::$table_name . " WHERE IMDBID = ?";
+    // $query .= " AND DateTimeDeleted IS NULL";
     // $query .= " AND IMDBID = ? ";
 
     $params = array($imdbid);
@@ -650,7 +650,7 @@ class Movie extends DatabaseObject {
 
       $arrContextOptions=array(
           "ssl"=>array(
-              "cafile" => "../../../Certificates/cacert.pem",
+              "cafile" => CERTIFICATE_PATH.DS."cacert.pem",
               "verify_peer"=> true,
               "verify_peer_name"=> true,
           ),

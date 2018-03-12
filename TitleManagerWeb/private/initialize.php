@@ -17,7 +17,7 @@
 defined("DS") ? NULL : define("DS",DIRECTORY_SEPARATOR);
 
 // define some absolute paths
-defined("SITE_ROOT") ? NULL : define("SITE_ROOT", "C:".DS."Maethor".DS."Program Filez".DS."Web Development".DS."Atom".DS."TitleManager");
+defined("SITE_ROOT") ? NULL : define("SITE_ROOT", "C:".DS."Maethor".DS."Projects".DS."TitleManager".DS."TitleManagerWeb");
 defined("PUBLIC_PATH") ? NULL : define("PUBLIC_PATH", SITE_ROOT.DS."public");
 defined("LIB_PATH") ? NULL : define("LIB_PATH", SITE_ROOT.DS."private");
 defined("CLASS_PATH") ? NULL : define("CLASS_PATH", LIB_PATH.DS."classes");
@@ -29,7 +29,8 @@ defined("SITEIMAGE_PATH") ? NULL : define("SITEIMAGE_PATH", IMAGE_PATH.DS."site"
 defined("STYLESHEET_PATH") ? NULL : define("STYLESHEET_PATH", SITE_ROOT.DS."public".DS."stylesheets.php");
 
 // other absolute paths
-defined("CERTIFICATE_PATH") ? NULL : define("CERTIFICATE_PATH", "C:".DS."Maethor".DS."Program Filez".DS."Web Development".DS."Certificates");
+defined("CERTIFICATE_PATH") ? NULL : define("CERTIFICATE_PATH", LIB_PATH.DS.
+"certificates");
 
 // ----------------
 
