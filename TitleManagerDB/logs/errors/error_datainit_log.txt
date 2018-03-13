@@ -1,0 +1,9 @@
+------------180312 10:59:01.45, by H710-MAETHOR\Maethor------------ 
+Something went wrong trying to initialize database with initial data.
+--- Script messages for initial.sql ---
+Changed database context to 'DBTest6'.
+Loading file 'Movies.csv' from directory...
+Populating table 'Movies'...
+Msg 50000, Level 15, State 1, Server H710-MAETHOR\SQLEXPRESS, Line 37
+Incorrect syntax near 'FIELDTERMINATO'.
+--- End of script messages for initial.sql ---
