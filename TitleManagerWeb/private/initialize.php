@@ -29,14 +29,18 @@ defined("SITEIMAGE_PATH") ? NULL : define("SITEIMAGE_PATH", IMAGE_PATH.DS."site"
 defined("STYLESHEET_PATH") ? NULL : define("STYLESHEET_PATH", SITE_ROOT.DS."public".DS."stylesheets.php");
 
 // other absolute paths
-defined("CERTIFICATE_PATH") ? NULL : define("CERTIFICATE_PATH", LIB_PATH.DS.
-"certificates");
+defined("CERTIFICATE_PATH") ? NULL : define("CERTIFICATE_PATH", LIB_PATH.DS."certificates");
+defined("LOG_PATH") ? NULL : define("LOG_PATH", LIB_PATH.DS."logs");
 
 // ----------------
 
 
 // load config file first
 require_once(LIB_PATH.DS."config.php");
+
+// load logger class to enable logging
+require_once(CLASS_PATH.DS."logger.php");
+require_once(CLASS_PATH.DS."exceptions.php");
 
 // load basic functions next so that everything after can use them
 require_once(LIB_PATH.DS."functions.php");
@@ -45,7 +49,6 @@ require_once(LIB_PATH.DS."validation_functions.php");
 // load core objects
 require_once(CLASS_PATH.DS."sqlserverdatabase.php");
 require_once(CLASS_PATH.DS."session.php");
-require_once(CLASS_PATH.DS."logger.php");
 
 // load database-related classes
 require_once(CLASS_PATH.DS."databaseobject.php");
@@ -61,6 +64,8 @@ require_once(CLASS_PATH.DS."moviesorting.php");
 require_once(CLASS_PATH.DS."loaner.php");
 require_once(CLASS_PATH.DS."movieloan.php");
 require_once(CLASS_PATH.DS."missingmovie.php");
+require_once(CLASS_PATH.DS."myerror.php");
+require_once(CLASS_PATH.DS."errorstring.php");
 
 // load other classes
 require_once(CLASS_PATH.DS."pagination.php");

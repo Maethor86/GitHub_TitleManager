@@ -15,6 +15,7 @@ echo $session->session_message();
 ?>
 
 <?php
+
 if (!empty($_GET["subject"])) {
 
   $subject_id = $_GET["subject"];
@@ -102,16 +103,7 @@ else {
 
 
 
-
 }
-
-
-
-
-
-
-
-
 
 
 

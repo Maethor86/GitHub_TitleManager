@@ -1,6 +1,4 @@
 <?php
-
-
 function redirect_to($new_location) {
   header("Location: " . $new_location);
   exit;
@@ -21,11 +19,7 @@ function __autoload($class_name) {
     $_SESSION["message"] = $output;
   }
   else {
-    $output .= "The file {$file} could not be found.";
-    $output .= "<br />";
-    $_SESSION["error"] = $output;
-    die();
-    // throw new Exception($output, EXCEPTION_CODE_FILE_NOT_FOUND);
+    throw new CannotFindClassException("Could not find the class {$class_name} at {$file}. ");
   }
 
 }
@@ -73,7 +67,6 @@ function load_contents($page_type) {
   return $content_files_to_load;
 }
 
-
 function generate_datetime_for_sql() {
   $fractional_second_precision = SQL_DATETIME_FRAC_SEC_PRECISION;
   $time = microtime(TRUE);
@@ -87,11 +80,70 @@ function generate_datetime_for_sql() {
 
 
 // small functions
-
 function make_page_title($page_title="Default") {
   $output = "<h2 class=\"page_header\">{$page_title}</h2>";
   return $output;
 }
+
+
+// error handling functions
+function error_to_exception($error_code, $message, $file, $line) {
+    global $logger;
+
+    $e = new ErrorException($message, ExceptionCode_Error + $error_code, $error_code, $file, $line);
+
+    // -- FATAL ERROR
+    // throw an Error Exception, to be handled by whatever Exception handling logic is available in this context
+    if (in_array($error_code, array(E_USER_ERROR, E_RECOVERABLE_ERROR))) {
+      throw $e;
+    }
+    // -- NON-FATAL ERROR/WARNING/NOTICE
+    else {
+      $logger->log_error($e);
+      return FALSE;
+    }
+}
+
+// function shutdown() {
+//   // This is our shutdown function, in
+//   // here we can do any last operations
+//   // before the script is complete.
+//   $error = error_get_last();
+//
+//   if ($error["type"] == E_ERROR) {
+//     global $logger;
+//     $code = $error["type"];
+//     $exception = new ErrorException($error["message"], ExceptionCode_Error + $error["type"]);
+//     $exception instanceof CriticalDatabaseException ? $logger->log_error_simple($exception) : $logger->log_error($exception);
+//     redirect_to("errorpage.php");
+//   }
+// }
+
+function exception_handler(Throwable $exception) {
+  if ($exception instanceof Error) {
+    $exception = new ErrorException($exception->getMessage(), ExceptionCode_Error + $exception->getCode(), 0, __FILE__, __LINE__, $exception);
+  }
+  global $logger;
+  $code = $exception->getCode();
+  $exception instanceof CriticalDatabaseException ? $logger->log_error_simple($exception) : $logger->log_error($exception);
+
+  $error_page = "errorpage.php";
+  $error_form  = "<form action=\"{$error_page}\" method=\"POST\" id=\"errorForm\" >";
+  $error_form .= "<input type=\"text\" name=\"ExceptionCode\" value=\"{$code}\" />";
+  $error_form .= "<input type=\"submit\" />";
+  $error_form .= "</form>";
+
+  $submit  = "<script type=\"text/javascript\">";
+  $submit .= "document.getElementById(\"errorForm\").submit()";
+  $submit .= "</script>";
+
+  echo $error_form;
+  echo $submit;
+}
+
+set_error_handler("error_to_exception");
+set_exception_handler("exception_handler");
+// register_shutdown_function("shutdown");
 
 
 // misc functions

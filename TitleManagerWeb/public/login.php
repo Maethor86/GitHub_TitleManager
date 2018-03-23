@@ -23,7 +23,7 @@ if (isset($_POST["login"])) {
 
   if ($found_user) {
     $session->login($found_user);
-    $logger->database_create_user_log($found_user);
+    // $logger->database_create_user_log($found_user);
     redirect_to("index.php");
   }
   else {

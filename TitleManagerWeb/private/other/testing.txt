@@ -1,0 +1,76 @@
+
+
+
+
+testing:
+
+
+error reporting:
+
+database								is desired result?	result
+in config file, change database to a nonexistent one			yes			single-logged, exception code 9100, redirect to errorpage.php
+in sqlserver class in public function query, add $result_set = FALSE;	yes			single-logged, exception code 9200, redirect to errorpage.php
+run invalid query (incorrect syntax), changed "select..." to "selects"	yes			double-logged, exception code 9200, redirect to errorpage.php
+run invalid query (break foreign key constraint)			yes			double-logged, exception code 9200, redirect to errorpage.php
+
+non-database
+									is desired result?	result									
+echo "dog"				// parse error			yes			script termination, nothing is logged
+strposvii();				// fatal error			yes			double-logged, exception code 10000, redirect to errorpage.php
+include ("filethatdoesnotexist.php");	// warning error		yes			two double-logged warnings, exception code 10002, display warnings
+echo $variablethatdoesnotexist;		// notice error			yes			double-logged, exception code 10008
+
+trigger_error("error", E_USER_ERROR);		// user fatal error	yes			double-logged, exception code 10256, redirect to errorpage.php
+trigger_error("warning", E_USER_WARNING);	// user warning		yes			double-logged, exception code 10512, display warnings
+trigger_error("notice", E_USER_NOTICE);		// user notice		yes			double-logged, exception code 11024, display notices
+
+throw new ThisexceptiondoesnotexistsException();			yes			double-logged, exception code 8000, redirect to errorpage.php
+throw new RuntimeException("RuntimeException");				yes			double-logged, exception code 0, redirect to errorpage.php
+
+
+list of error tests
+// echo "dog" // parse erorr
+// strposvii(); // fatal error
+// include ("filethatdoesnotexist.php"); // warning error
+// echo $variablethatdoesnotexist; // notice error
+
+// trigger_error("error", E_USER_ERROR); // user fatal error
+// trigger_error("warning", E_USER_WARNING); // user warning
+// trigger_error("notice", E_USER_NOTICE); // user notice
+
+// throw new ThisexceptiondoesnotexistsException();
+// throw new RuntimeException("RuntimeException");
+
+
+
+
+
+questions for 00.00.0001.sql:
+
+how long should the errorstring nvarchar(x) be in the database? 2000? 4000? max?
+should i allow that no user is entered in the creation of an error? so have generatedbyuser = NULL (and only have ipaddress)? i have now made a constraint such that at least one of those two must be NOT NULL
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

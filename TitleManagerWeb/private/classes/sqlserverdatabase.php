@@ -1,6 +1,7 @@
 <?php
 
 // require_once("../config.php");
+// require_once("logger.php");
 
 class SQLSERVERDatabase {
 
@@ -24,7 +25,8 @@ class SQLSERVERDatabase {
     // establishes the connection
     $this->connection = sqlsrv_connect($serverName, $connectionOptions);
     if(!$this->connection) {
-     die("Database connection failed " . $this->sql_formatted_errors(sqlsrv_errors()));
+      $message = "Couldn't connect to database '" . DB_DATABASE . "'. " . $this->sql_formatted_errors(sqlsrv_errors());
+      throw new \DatabaseConnectionFailedException($message);
     }
   }
 
@@ -35,25 +37,23 @@ class SQLSERVERDatabase {
     }
   }
 
-  public function query($sql, $params, $error_log=FALSE) {
+  public function query($sql, $params) {
+    try {
+      $result_set = sqlsrv_query($this->connection, $sql, $params);
+      $this->confirm_query($result_set);
+      return $result_set;
+    }
+    catch (\Exception $e) {
+      $class = get_class($e);
+      throw new $class($e->getMessage() . "SQL query: '" . $sql . "', with parameters: " . json_encode($params), $e->getCode());
+    }
 
-    // echo $sql;
-    // var_dump($params);
 
-    $result_set = sqlsrv_query($this->connection, $sql, $params);
-    $this->confirm_query($result_set, $error_log);
-    return $result_set;
   }
 
-  private function confirm_query($result_set, $error_log=FALSE) {
+  private function confirm_query($result_set) {
     if (!$result_set) {
-      if ($error_log == FALSE) {
-        throw new Exception("Error confirming query. ", EXCEPTION_CODE_SQL_CONFIRM_QUERY);
-      }
-      else {
-        die(sql_formatted_errors(sqlsrv_errors()));
-        return FALSE;
-      }
+      throw new \DatabaseQueryFailedException("Error confirming query. " . $this->sql_formatted_errors(sqlsrv_errors()));
     }
     else {
       return TRUE;
@@ -76,7 +76,12 @@ class SQLSERVERDatabase {
 
   public function sql_formatted_errors($errors) {
     // shows a list of errors when trying to connect with sql server
-    $output  = "[";
+    if (empty($errors)) {
+      return "No SQL errors. ";
+    }
+
+    $output  = "SQL errors: ";
+    $output .= "[";
     $output .= generate_datetime_for_sql();
     $output .= "] ";
     $output .= "Error information: ";
@@ -89,7 +94,7 @@ class SQLSERVERDatabase {
       $output .= "Message: ".$error['message'] . " ";
       $count++;
     }
-    // $output .= "";
+    $output .= "End of SQL errors. ";
     return $output;
   }
 

@@ -57,9 +57,11 @@ class Session {
   }
 
   public function login($user) {
+    global $logger;
     if ($user) {
       $this->user_id = $_SESSION["user_id"] = $user->get_userid();
       $this->logged_in = TRUE;
+      $logger->database_create_user_log($user->get_userid());
     }
   }
 

@@ -2,3 +2,6 @@ public/php_errors.log
 public/images/posters/
 public/images/other/
 TitleManagerDB/other/
+TitleManagerDB/logs/
+TitleManagerWeb/public/php_errors.log
+TitleManagerWeb/private/logs/
