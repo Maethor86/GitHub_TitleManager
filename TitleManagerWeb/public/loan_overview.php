@@ -10,11 +10,9 @@ if (!($session->is_logged_in() && $session->is_session_valid())) {
 }
 ?>
 
-
 <?php
 $current_loans = "";
 $expanded_loan = "";
-
 
 if (isset($_GET["loaner"])) {
   $loaner_expanded = Loaner::find_by_id($_GET["loaner"]);
@@ -46,16 +44,15 @@ if (isset($_GET["loaner"])) {
 
         $expanded_loan = "";
       }
-
-
     }
   }
 }
 
-
 $output = "";
-$loaners = Loaner::find_all();
-if (count($loaners > 0)) {
+$total_movieloans = count(Movieloan::find_all_currentloans());
+if ($total_movieloans > 0) {
+  $loaners = Loaner::find_all();
+  $output .= "A total of " . $total_movieloans . " movies are currently loaned out.<br />";
   $output .= "<h4>Loaners</h4>";
   foreach ($loaners as $loaner) {
     $movieloans = $loaner->find_currentloans();
@@ -87,7 +84,6 @@ echo make_page_title("Loan Overview");
 echo $session->session_message();
 
 echo $output;
-
 ?>
 
 

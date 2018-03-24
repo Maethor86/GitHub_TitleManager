@@ -7,6 +7,8 @@ class Loaner extends DatabaseObject {
   protected static $table_name = "Loaners";
   protected static $table_id_name = "LoanerID";
 
+  protected static $table_name_movieloans = "Movieloans";
+
   protected $LoanerID;
   protected $Description;
 
@@ -31,7 +33,7 @@ class Loaner extends DatabaseObject {
 
   public function find_currentloans() {
 
-    $query  = "SELECT * FROM Movieloans";
+    $query  = "SELECT * FROM " . self::$table_name_movieloans;
     $query .= " INNER JOIN Movies ON Movies.MovieID = Movieloans.MovieID ";
     $query .= " WHERE Movieloans.LoanerID = ?";
     $query .= " AND Movieloans.DateTimeReturn IS NULL";

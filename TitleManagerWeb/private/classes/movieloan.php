@@ -88,7 +88,12 @@ class Movieloan extends DatabaseObject {
   }
 
   public static function find_by_movieid($movieid) {
-    $query  = "SELECT TOP 1 * FROM " . self::$table_name . " WHERE MovieID = ? AND DateTimeReturn IS NULL";
+
+    $query  = "SELECT TOP 1 * FROM " . self::$table_name;
+    $query .= " INNER JOIN Movies ON Movies.MovieID = Movieloans.MovieID ";
+    $query .= " WHERE Movieloans.MovieID = ?";
+    $query .= " AND Movieloans.DateTimeReturn IS NULL";
+    $query .= " AND Movies.DateTimeDeleted IS NULL";
 
     $params = array($movieid);
     // $params = array(array($imdbid, SQLSRV_PARAM_IN));
@@ -96,6 +101,19 @@ class Movieloan extends DatabaseObject {
     $movieloan = self::find_by_sql($query, $params);
     return (!empty($movieloan)) ? array_shift($movieloan) : FALSE;
   }
+
+  public static function find_all_currentloans() {
+    $query  = "SELECT * FROM " . self::$table_name;
+    $query .= " INNER JOIN Movies ON Movies.MovieID = Movieloans.MovieID ";
+    $query .= " AND Movieloans.DateTimeReturn IS NULL";
+    $query .= " AND Movies.DateTimeDeleted IS NULL";
+
+    $params = array();
+
+    $movieloans = self::find_by_sql($query, $params);
+    return $movieloans;
+  }
+
 
   public static function return_movieloan($movieid) {
 
