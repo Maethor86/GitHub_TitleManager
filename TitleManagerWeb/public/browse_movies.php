@@ -183,7 +183,7 @@ $search_form .= "";
 $search_form .= "</div>";
 $search_form .= "</li>";
 $search_form .= "<li class=\"form\">";
-$search_form .= "<div><input type=\"text\" name=\"search\" placeholder=\"Enter title...\" style=\"font-style:italic\" value=\"".$title."\"></div>";
+$search_form .= "<div><input type=\"text\" name=\"search\" placeholder=\"Search " . Movie::count_movies() . " movies...\" style=\"font-style:italic\" value=\"".$title."\"></div>";
 $search_form .= "<div><select name=\"status\"/>";
 $search_form .= "<option value=\"all\">All</option>";
 $moviestati = Moviestatus::find_all();

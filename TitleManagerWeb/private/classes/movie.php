@@ -577,31 +577,9 @@ class Movie extends DatabaseObject {
     }
   }
 
-  public static function find_all_movies() {
+  public static function count_movies() {
     // returns array with movies if successful
-
-    $query  = "SELECT * FROM Movies";
-    $query .= " ORDER BY Title ASC";
-
-    $params = array();
-
-    $movie_set = NULL;
-    try {
-      $movie_set = self::find_by_sql($query, $params);
-    }
-    catch (exception $e) {
-      echo "Exception.";
-      /*
-      sql_log_errors($e, sqlsrv_errors());
-      if ($e->getCode() == EXCEPTION_CODE_SQL_CONFIRM_QUERY) {
-        $_SESSION["message"] .= "Couldn't find any movie with title containing '" . $title . "'.<br />";
-      }
-      else {
-        $_SESSION["error"] .= make_exception_message_to_user($e);
-      }
-      */
-    }
-    return $movie_set;
+    return Movie::count_movie_set_by_title("");
   }
 
 
