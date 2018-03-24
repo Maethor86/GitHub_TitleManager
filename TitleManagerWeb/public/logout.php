@@ -4,7 +4,14 @@ include("../private/initialize.php");
 
 <?php
 // update last_activity in sql server to reflect clicking on logout
-$session->update_session_activity();
+try {
+  $session->update_session_activity();
+}
+catch (Throwable $e) {
+  $session->logout();
+  throw $e;
+}
+
 
 // reset session, and redirect to login page
 $_SESSION["user_id"] = NULL;

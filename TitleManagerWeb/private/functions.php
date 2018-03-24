@@ -28,25 +28,25 @@ function __autoload($class_name) {
 function load_layout($page_type) {
   switch ($page_type) {
     case "login":
-      $layout_files_to_load["header"]        = LAYOUT_PATH.DS."standard".DS."header_standard.php";
-      $layout_files_to_load["sidebar_left"]  = LAYOUT_PATH.DS."login".DS."sidebar_left_login.php";
-      $layout_files_to_load["sidebar_right"] = LAYOUT_PATH.DS."login".DS."sidebar_right_login.php";
-      $layout_files_to_load["footer"]        = LAYOUT_PATH.DS."login".DS."footer_login.php";
+        $layout_files_to_load["header"]        = LAYOUT_PATH.DS."standard".DS."header_standard.php";
+        $layout_files_to_load["sidebar_left"]  = LAYOUT_PATH.DS."login".DS."sidebar_left_login.php";
+        $layout_files_to_load["sidebar_right"] = LAYOUT_PATH.DS."login".DS."sidebar_right_login.php";
+        $layout_files_to_load["footer"]        = LAYOUT_PATH.DS."login".DS."footer_login.php";
       break;
 
     case "standard":
-      $layout_files_to_load["header"]        = LAYOUT_PATH.DS."standard".DS."header_standard.php";
-      $layout_files_to_load["sidebar_left"]  = LAYOUT_PATH.DS."standard".DS."sidebar_left_standard.php";
-      $layout_files_to_load["sidebar_right"] = LAYOUT_PATH.DS."standard".DS."sidebar_right_standard.php";
-      $layout_files_to_load["footer"]        = LAYOUT_PATH.DS."standard".DS."footer_standard.php";
-      $layout_files_to_load["sidebar_left_back"]  = LAYOUT_PATH.DS."sidebar_left_back.php";
-      $layout_files_to_load["sidebar_left_back_main"]  = LAYOUT_PATH.DS."sidebar_left_back_main.php";
-      $layout_files_to_load["sidebar_left_back_search"]  = LAYOUT_PATH.DS."sidebar_left_back_search.php";
-      $layout_files_to_load["sidebar_left_back_browse"]  = LAYOUT_PATH.DS."sidebar_left_back_browse.php";
+        $layout_files_to_load["header"]        = LAYOUT_PATH.DS."standard".DS."header_standard.php";
+        $layout_files_to_load["sidebar_left"]  = LAYOUT_PATH.DS."standard".DS."sidebar_left_standard.php";
+        $layout_files_to_load["sidebar_right"] = LAYOUT_PATH.DS."standard".DS."sidebar_right_standard.php";
+        $layout_files_to_load["footer"]        = LAYOUT_PATH.DS."standard".DS."footer_standard.php";
+        $layout_files_to_load["sidebar_left_back"]  = LAYOUT_PATH.DS."sidebar_left_back.php";
+        $layout_files_to_load["sidebar_left_back_main"]  = LAYOUT_PATH.DS."sidebar_left_back_main.php";
+        $layout_files_to_load["sidebar_left_back_search"]  = LAYOUT_PATH.DS."sidebar_left_back_search.php";
+        $layout_files_to_load["sidebar_left_back_browse"]  = LAYOUT_PATH.DS."sidebar_left_back_browse.php";
       break;
 
     default:
-        die("Wrong page type input.");
+        throw new \Exception("Wrong page type input.");
       break;
   }
   return $layout_files_to_load;
@@ -58,10 +58,10 @@ function load_contents($page_type) {
     case "standard":
       $content_files_to_load["title"]            = PUBLIC_PATH.DS."content_title.php";
       $content_files_to_load["subtitles"]        = PUBLIC_PATH.DS."content_subtitles.php";
-      break;
+    break;
 
     default:
-      die("Wrong page type input.");
+        throw new \Exception("Wrong page type input.");
       break;
   }
   return $content_files_to_load;
@@ -121,7 +121,7 @@ function error_to_exception($error_code, $message, $file, $line) {
 
 function exception_handler(Throwable $exception) {
   if ($exception instanceof Error) {
-    $exception = new ErrorException($exception->getMessage(), ExceptionCode_Error + $exception->getCode(), 0, __FILE__, __LINE__, $exception);
+    $exception = new ErrorException($exception->getMessage(), ExceptionCode_Error + $exception->getCode(), 0, $exception->getFile(), $exception->getLine(), $exception);
   }
   global $logger;
   $code = $exception->getCode();

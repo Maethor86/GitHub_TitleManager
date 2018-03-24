@@ -9,15 +9,15 @@
 class Session {
 
 
-  public $user_id;
-  private $logged_in = FALSE;
+  protected $user_id;
+  protected $logged_in = FALSE;
 
   // in seconds
-  private $max_inactivity_time = SESSION_INACTIVITY;
+  protected $max_inactivity_time = SESSION_INACTIVITY;
 
 
   function __construct() {
-    session_save_path("../../../Sessions");
+    session_save_path(SESSION_PATH);
     session_start();
     $this->check_login();
     if ($this->logged_in) {
@@ -30,12 +30,26 @@ class Session {
 
 
   // -- get functions --
+  public function get_userid() {
+    return $this->user_id;
+  }
 
   public function get_max_inactivity_time() {
     return $this->max_inactivity_time;
   }
 
   // -- other functions --
+
+  public function login(User $user) {
+    if ($user) {
+      $this->user_id = $user->get_userid();
+      $login = Login::create_user_login($this->user_id);
+      $_SESSION["user_id"] = $this->user_id;
+      $_SESSION["login_id"] = $login->get_loginid();
+      $_SESSION["last_activity"] = $login->get_datetimelastactivity();
+      $this->logged_in = TRUE;
+    }
+  }
 
   public function is_logged_in() {
     return $this->logged_in;
@@ -56,14 +70,7 @@ class Session {
     }
   }
 
-  public function login($user) {
-    global $logger;
-    if ($user) {
-      $this->user_id = $_SESSION["user_id"] = $user->get_userid();
-      $this->logged_in = TRUE;
-      $logger->database_create_user_log($user->get_userid());
-    }
-  }
+
 
   public function logout() {
     unset($_SESSION["user_id"]);
@@ -116,15 +123,12 @@ class Session {
   }
 
   public function update_session_activity() {
-    global $logger;
-
     if (isset($_SESSION["last_activity"])) {
       $_SESSION["last_activity"] = generate_datetime_for_sql();
-
       if (isset($_SESSION["login_id"])) {
-        // $_SESSION["login_id"] is set, this should be set whenever $_SESSION["user_id"] is set
         $login_id = $_SESSION["login_id"];
-        $logged = $logger->database_update_user_log($login_id);
+        $login = Login::find_by_id($login_id);
+        $logged = $login->update_user_login($login->get_loginid());
         if ($logged) {
           return TRUE;
         }

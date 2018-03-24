@@ -74,62 +74,6 @@ class Logger {
 
 
 
-  // old functions, want to change 180321
-
-  // to database
-  public function database_create_user_log($user_id) {
-    //rename to create_user_log($user) ?
-    global $database;
-
-    $datetime_login = generate_datetime_for_sql();
-
-    $datetime_last_activity = $datetime_login;
-
-    $query  = "INSERT INTO Web_Logins (UserID, DateTimeLogin, DateTimeLastActivity)";
-    $query .= " VALUES (?, ?, ?)";
-    $query .= " ; SELECT SCOPE_IDENTITY() as id";
-
-    $params = array($user_id, $datetime_login, $datetime_last_activity);
-
-    $logged_user = $database->query($query, $params);
-    $_SESSION["login_id"] = $database->get_scope_identity($logged_user);
-    $_SESSION["last_activity"] = $datetime_last_activity;
-    return $logged_user;
-  }
-
-  public function database_update_user_log($login_id) {
-    global $database;
-
-    $datetime_last_activity = generate_datetime_for_sql();
-
-    $query  = "UPDATE Web_Logins";
-    $query .= " SET DateTimeLastActivity = ?";
-    $query .= " WHERE Web_LoginID = ?";
-
-    $params = array($datetime_last_activity, $login_id);
-
-    $logged = $database->query($query, $params);
-    return $logged;
-  }
-
-
-  // to file
-  public function log_to_file($file_name, $message) {
-    $file = fopen($file_name, "a");
-    if ($file) {
-      $message .= "\n";
-      fwrite($file, $message);
-      fclose($file);
-    }
-    else {
-      die("Unable to open file!");
-    }
-  }
-
-  // -------------------------------------------------
-
-
-
 }
 
 $logger = new Logger();
