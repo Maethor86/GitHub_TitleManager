@@ -5,3 +5,5 @@ TitleManagerDB/other/
 TitleManagerDB/logs/
 TitleManagerWeb/public/php_errors.log
 TitleManagerWeb/private/logs/
+TitleManagerWeb/public/images/site/not in use/
+TitleManagerWeb/public/images/posters/
