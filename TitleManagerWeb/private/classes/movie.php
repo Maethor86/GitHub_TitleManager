@@ -278,16 +278,16 @@ class Movie extends DatabaseObject {
 
   }
 
-    // helper functions for search_extdb_title()
-    public static function prepare_title_for_extdb_search($title) {
-      $title = str_replace(" ", "+", $title);
-      $title = str_replace(":", "%3A", $title);
-      return $title;
-    }
-    public static function get_extdb_url_title() {
-      return "http://www.omdbapi.com/?apikey=ce86382d&type=movie&s=";
-    }
-    // -- helper functions for search_extdb_title() --
+  // helper functions for search_extdb_title()
+  public static function prepare_title_for_extdb_search($title) {
+    $title = str_replace(" ", "+", $title);
+    $title = str_replace(":", "%3A", $title);
+    return $title;
+  }
+  public static function get_extdb_url_title() {
+    return "http://www.omdbapi.com/?apikey=ce86382d&type=movie&s=";
+  }
+  // -- helper functions for search_extdb_title() --
 
   public static function search_extdb_imdbid($imdbid) {
 
@@ -320,34 +320,34 @@ class Movie extends DatabaseObject {
     }
   }
 
-    // helper functions for search_extdb_imdbid()
-    public static function create_object($data) {
-      $movie = new Movie;
+  // helper functions for search_extdb_imdbid()
+  public static function create_object($data) {
+    $movie = new Movie;
 
-      $movie->MovieID = FALSE;
-      $movie->DateTimeCreated = FALSE;
-      $movie->CreatedByUser = FALSE;
-      $movie->Title = $data["Title"];
-      $movie->IMDBID = $data["imdbID"];
-      $movie->IMDBRating = $data["imdbRating"];
-      $movie->RunningTime = $data["Runtime"];
-      $movie->IMDBVotes = $data["imdbVotes"];
-      $movie->PlotSummary = $data["PlotSummary"];
-      $movie->Plot = $data["Plot"];
-      $movie->ReleasedYear = $data["Year"];
-      $movie->Language = $data["Language"];
-      $movie->Country = $data["Country"];
-      $movie->Genre = $data["Genre"];
-      $movie->Director = $data["Director"];
-      $movie->Cast = $data["Actors"];
-      $movie->PosterURL = $data["Poster"];
+    $movie->MovieID = FALSE;
+    $movie->DateTimeCreated = FALSE;
+    $movie->CreatedByUser = FALSE;
+    $movie->Title = $data["Title"];
+    $movie->IMDBID = $data["imdbID"];
+    $movie->IMDBRating = $data["imdbRating"];
+    $movie->RunningTime = $data["Runtime"];
+    $movie->IMDBVotes = $data["imdbVotes"];
+    $movie->PlotSummary = $data["PlotSummary"];
+    $movie->Plot = $data["Plot"];
+    $movie->ReleasedYear = $data["Year"];
+    $movie->Language = $data["Language"];
+    $movie->Country = $data["Country"];
+    $movie->Genre = $data["Genre"];
+    $movie->Director = $data["Director"];
+    $movie->Cast = $data["Actors"];
+    $movie->PosterURL = $data["Poster"];
 
-      return $movie;
-    }
-    public static function get_extdb_url_imdbid() {
-      return "http://www.omdbapi.com/?apikey=ce86382d&i=";
-    }
-    // -- helper functions for search_extdb_imdbid() --
+    return $movie;
+  }
+  public static function get_extdb_url_imdbid() {
+    return "http://www.omdbapi.com/?apikey=ce86382d&i=";
+  }
+  // -- helper functions for search_extdb_imdbid() --
 
 
 
@@ -646,7 +646,18 @@ class Movie extends DatabaseObject {
   }
 
 
+  public static function find_movies_added_by_userid($user_id) {
+    $query  = "SELECT * FROM " . self::$table_name;
+    $query .= " WHERE CreatedByUser = ?";
+    $query .= " AND DateTimeDeleted IS NULL";
+    $query .= " ORDER BY DateTimeCreated DESC";
 
+    $params = array($user_id);
+
+    $movies = self::find_by_sql($query, $params);
+    return $movies;
+
+  }
 
 }
 

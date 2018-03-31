@@ -58,7 +58,7 @@ require_once(CLASS_PATH.DS."databaseobject.php");
 require_once(CLASS_PATH.DS."user.php");
 require_once(CLASS_PATH.DS."subject.php");
 require_once(CLASS_PATH.DS."page.php");
-require_once(CLASS_PATH.DS."mydatetime.php");
+require_once(CLASS_PATH.DS."tmdatetime.php");
 require_once(CLASS_PATH.DS."movie.php");
 require_once(CLASS_PATH.DS."poster.php");
 require_once(CLASS_PATH.DS."moviestatus.php");
@@ -70,6 +70,7 @@ require_once(CLASS_PATH.DS."missingmovie.php");
 require_once(CLASS_PATH.DS."myerror.php");
 require_once(CLASS_PATH.DS."errorstring.php");
 require_once(CLASS_PATH.DS."login.php");
+require_once(CLASS_PATH.DS."userrole.php");
 
 // load other classes
 require_once(CLASS_PATH.DS."pagination.php");

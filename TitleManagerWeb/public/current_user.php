@@ -12,29 +12,34 @@ echo $session->session_message();
 ?>
 
 <?php
-
 $user = User::find_by_id($_SESSION["user_id"]);
 
-$username = $user->get_username();
-$created_datetime = $user->get_datetimecreated();
-$user_level = $user->get_userroleid();
+$total_logins = count(Login::find_logins_by_userid($user->get_userid()));
+$previous_login = Login::find_previous_login_by_userid($user->get_userid(),1);
+$previous_added_movie = Movie::find_movies_added_by_userid($user->get_userid());
+if ($previous_added_movie) {
+  $previous_added_movie = $previous_added_movie[0];
+}
 
-$output  = "<ul class=\"form\">";
-$output .= "<li class=\"form\">";
-$output .= "<div>Username:</div><div><i>$username</i></div>";
-$output .= "</li>";
-$output .= "<li class=\"form\">";
-$output .= "<div>User level:</div><div><i>$user_level</i></div>";
-$output .= "</li>";
-$output .= "<li class=\"form\">";
-$output .= "<div>User created:</div><div><i>$created_datetime</i></div>";
-$output .= "</li>";
-$output .= "</ul>";
+$output  = "<h2 style=\"display: flex; align-items: center\">" . $user->get_username() . " &nbsp; " . $user->get_gravatar($user->get_username(), 40, "identicon", "g", TRUE) . "</h2>";
+$output .= "User since " . generate_datetime_diff(new TMDateTime($user->get_datetimecreated())) . ".<br />";
+$output .= "<h4>Logins</h4>";
+$output .= "Total logins: " . $total_logins . ".<br />";
+if ($previous_login) {
+  $output .= "Last login: " . generate_datetime_diff(new TMDateTime($previous_login->get_datetimelogin())) . ".<br />";
+}
+$output .= "<h4>Movies</h4>";
+$output .= "Movies added: " . count(Movie::find_movies_added_by_userid($user->get_userid())) . ".<br />";
+if ($previous_added_movie) {
+  $output .= "Most recently added movie was " . $previous_added_movie->get_title() . " on " . generate_datetime_diff(new TMDateTime($previous_added_movie->get_datetimecreated())) . ".<br />";
+}
+$output .= "<h4>Account</h4>";
+$output .= "User level: " . Userrole::find_by_id($user->get_userroleid())->get_userrolename() . ".";
+
+
+
 
 echo $output;
-
-
-
 ?>
 
 

@@ -52,8 +52,32 @@ class Login extends DatabaseObject {
 
   // -------------------------------
 
+  public static function find_previous_login_by_userid($user_id, $offset=0) {
 
-  // to database
+    // offset=0 means the current login, offset=1 means the previous login etc
+
+    $query  = "SELECT * FROM " . self::$table_name;
+    $query .= " WHERE UserID = ?";
+    $query .= " ORDER BY DateTimeLogin DESC";
+    $query .= " OFFSET ? ROWS";
+    $query .= " FETCH NEXT 1 ROWS ONLY";
+
+    $params = array($user_id, $offset);
+
+    $login = self::find_by_sql($query, $params);
+    return (!empty($login)) ? array_shift($login) : FALSE;
+  }
+
+  public static function find_logins_by_userid($user_id) {
+    $query  = "SELECT * FROM " . self::$table_name;
+    $query .= " WHERE UserID = ?";
+
+    $params = array($user_id);
+
+    $logins = self::find_by_sql($query, $params);
+    return $logins;
+  }
+
   public static function create_user_login($user_id) {
     $datetime_login = generate_datetime_for_sql();
     $datetime_last_activity = $datetime_login;

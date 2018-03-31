@@ -67,6 +67,7 @@ function load_contents($page_type) {
   return $content_files_to_load;
 }
 
+// time functions
 function generate_datetime_for_sql() {
   $fractional_second_precision = SQL_DATETIME_FRAC_SEC_PRECISION;
   $time = microtime(TRUE);
@@ -76,6 +77,52 @@ function generate_datetime_for_sql() {
   $datetime =  date($datetime_format, $time) . $milli_secs;
 
   return $datetime;
+}
+
+function generate_datetime_diff(TMDateTime $then) {
+  $now = new TMDateTime(generate_datetime_for_sql());
+  $days_ago = $now->date_diff($then)->format("%a");
+  $diff = $now->time_diff($then);
+
+  $output = "";
+
+  switch ($days_ago) {
+    case 0:
+      $a = (int)(60*24*$diff->format("%a"));
+      $b = (int)($diff->format("%h")*60);
+      $c = (int)($diff->format("%i"));
+      $d = $a + $b + $c;
+      if ($d < 60) {
+        if ($d == 1) {
+          $output .=  $d . " minute ago";
+        }
+        else {
+          $output .=  $d . " minutes ago";
+        }
+      }
+      else {
+        $output .= "today at " . $then->get_time_short();
+      }
+      break;
+    case 1:
+        $output .= "yesterday at " . $then->get_time_short();
+      break;
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+        $output .= $then->get_dayofweek() . " at " . $then->get_time_short();
+      break;
+
+    default:
+      if ($days_ago <= 20) {
+        $output .= $days_ago . " days ago, at ";
+      }
+      $output .= $then->get_presentable_datetime();
+      break;
+  }
+  return $output;
 }
 
 

@@ -7,6 +7,11 @@ class CannotFindClassException extends Exception {
     }
 }
 
+class WrongFormatException extends Exception {
+  function __construct($message, $code = ExceptionCode_WrongFormat) {
+        parent::__construct($message, $code);
+    }
+}
 
 class DatabaseConnectionFailedException extends CriticalDatabaseException {
   function __construct($message, $code = ExceptionCode_DatabaseConnectionFailed) {

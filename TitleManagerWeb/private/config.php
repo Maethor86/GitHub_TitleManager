@@ -31,6 +31,7 @@ defined("ExceptionCode_DatabaseQueryFailed") ? NULL : define("ExceptionCode_Data
 defined("ExceptionCode_Error") ? NULL : define("ExceptionCode_Error",(int) $config["ErrorException"]);
 
 defined("ExceptionCode_CannotFindClass") ? NULL : define("ExceptionCode_CannotFindClass",(int) $config["CannotFindClassException"]);
+defined("ExceptionCode_WrongFormat") ? NULL : define("ExceptionCode_WrongFormat",(int) $config["WrongFormatException"]);
 
 // legacy exception codes, want to delete
 // defined("EXCEPTION_CODE_SQL_CONFIRM_QUERY") ? NULL : define("EXCEPTION_CODE_SQL_CONFIRM_QUERY",200);
