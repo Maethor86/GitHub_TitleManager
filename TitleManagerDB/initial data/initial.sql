@@ -31,6 +31,7 @@ BEGIN TRY
 			FROM ''' + @directory + @filename + '''
 			WITH
 			(
+				CHECK_CONSTRAINTS,
 				FIRSTROW = 2,
 				FIELDTERMINATOR = ''|'',
 				ROWTERMINATOR = ''\n''

@@ -4,7 +4,7 @@ require_once(CLASS_PATH.DS."sqlserverdatabase.php");
 
 class User extends DatabaseObject {
 
-  protected static $table_name = "Web_Users";
+  protected static $table_name = "Users";
   protected static $table_id_name = "UserID";
 
   protected $UserID;

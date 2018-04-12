@@ -32,6 +32,8 @@ class Movie extends DatabaseObject {
   protected $MoviequalityID;
   protected $LoanerID;
 
+  protected $DateTimeLastModified;
+  protected $LastModifiedByUser;
 
 
   // -------------------------------
@@ -224,7 +226,23 @@ class Movie extends DatabaseObject {
     }
   }
 
+  public function get_datetimelastmodified() {
+    if (isset($this->DateTimeLastModified)) {
+      return $this->DateTimeLastModified;
+    }
+    else {
+      return "";
+    }
+  }
 
+  public function get_lastmodifiedbyuser() {
+    if (isset($this->LastModifiedByUser)) {
+      return $this->LastModifiedByUser;
+    }
+    else {
+      return "";
+    }
+  }
 
 
   public function get_runningtime_hours() {
@@ -358,12 +376,13 @@ class Movie extends DatabaseObject {
 
     if ($movie) {
 
-      $params = array(generate_datetime_for_sql(),$_SESSION["user_id"],$movie->get_title(),$movie->get_imdbid(),$movie->get_imdbrating(),$movie->get_runningtime(),$movie->get_imdbvotes(),$movie->get_plotsummary(),$movie->get_plot(),$movie->get_releasedyear(),$movie->get_language(),$movie->get_country(),$movie->get_genre(),$movie->get_director(),$movie->get_cast(),$movie->get_posterurl(),$status,$quality);
+      $now = generate_datetime_for_sql();
+      $params = array($now,$_SESSION["user_id"],$movie->get_title(),$movie->get_imdbid(),$movie->get_imdbrating(),$movie->get_runningtime(),$movie->get_imdbvotes(),$movie->get_plotsummary(),$movie->get_plot(),$movie->get_releasedyear(),$movie->get_language(),$movie->get_country(),$movie->get_genre(),$movie->get_director(),$movie->get_cast(),$movie->get_posterurl(),$status,$quality,$now,$_SESSION["user_id"]);
 
       $query  = "INSERT INTO " . self::$table_name;
-      $query .= " (DateTimeCreated, CreatedByUser, Title, IMDBID, IMDBRating, RunningTime, IMDBVotes, PlotSummary, Plot, ReleasedYear, Language, Country, Genre, Director, Cast, PosterURL, MoviestatusID, MoviequalityID)";
+      $query .= " (DateTimeCreated, CreatedByUser, Title, IMDBID, IMDBRating, RunningTime, IMDBVotes, PlotSummary, Plot, ReleasedYear, Language, Country, Genre, Director, Cast, PosterURL, MoviestatusID, MoviequalityID, DateTimeLastModified, LastModifiedByUser)";
       $query .= " VALUES";
-      $query .= " (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+      $query .= " (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
       $query .= "; SELECT SCOPE_IDENTITY() AS id";
 
 
@@ -401,12 +420,12 @@ class Movie extends DatabaseObject {
     }
     if ($ext_movie) {
       $query  = "UPDATE " . self::$table_name;
-      $query .= " SET Title = ?, IMDBID = ?, IMDBRating = ?, RunningTime = ?, IMDBVotes = ?, PlotSummary = ?, Plot = ?, ReleasedYear = ?, Language = ?, Country = ?, Genre = ?, Director = ?, Cast = ?, PosterURL = ?";
+      $query .= " SET Title = ?, IMDBID = ?, IMDBRating = ?, RunningTime = ?, IMDBVotes = ?, PlotSummary = ?, Plot = ?, ReleasedYear = ?, Language = ?, Country = ?, Genre = ?, Director = ?, Cast = ?, PosterURL = ?, DateTimeLastModified = ?, LastModifiedByUser = ?";
       $query .= " WHERE";
       $query .= " MovieID = ?";
       $query .= " SELECT TOP 1 * FROM " . self::$table_name . " WHERE MovieID = ?";
 
-      $params = array($ext_movie->get_title(),$ext_movie->get_imdbid(),$ext_movie->get_imdbrating(),$ext_movie->get_runningtime(),$ext_movie->get_imdbvotes(),$ext_movie->get_plotsummary(),$ext_movie->get_plot(),$ext_movie->get_releasedyear(),$ext_movie->get_language(),$ext_movie->get_country(),$ext_movie->get_genre(),$ext_movie->get_director(),$ext_movie->get_cast(),$ext_movie->get_posterurl(),$movie_id,$movie_id);
+      $params = array($ext_movie->get_title(),$ext_movie->get_imdbid(),$ext_movie->get_imdbrating(),$ext_movie->get_runningtime(),$ext_movie->get_imdbvotes(),$ext_movie->get_plotsummary(),$ext_movie->get_plot(),$ext_movie->get_releasedyear(),$ext_movie->get_language(),$ext_movie->get_country(),$ext_movie->get_genre(),$ext_movie->get_director(),$ext_movie->get_cast(),$ext_movie->get_posterurl(),$movie_id,$movie_id,generate_datetime_for_sql(),$_SESSION["user_id"]);
 
       $updatedmovie_id = self::update_by_sql($query, $params);
 
@@ -452,14 +471,15 @@ class Movie extends DatabaseObject {
         array_push($params, $status);
       }
       if ($quality != 0) {
-      $query .= " MoviequalityID = ?";
+      $query .= " MoviequalityID = ?,";
         array_push($params, $quality);
       }
+      $query .= " DateTimeLastModified = ?, LastModifiedByUser = ?";
       $query .= " WHERE";
       $query .= " MovieID = ?";
       $query .= " SELECT TOP 1 * FROM " . self::$table_name . " WHERE MovieID = ?";
 
-      array_push($params, $movie->get_movieid(),$movie->get_movieid());
+      array_push($params,generate_datetime_for_sql(),$_SESSION["user_id"],$movie->get_movieid(),$movie->get_movieid());
 
       $updatedmovie_id = self::update_by_sql($query, $params);
 
@@ -485,12 +505,13 @@ class Movie extends DatabaseObject {
 
       // then flags the movie as deleted in the database
       $query  = "UPDATE " . self::$table_name;
-      $query .= " SET DateTimeDeleted = ?, DeletedByUser = ?";
+      $query .= " SET DateTimeDeleted = ?, DeletedByUser = ?, DateTimeLastModified = ?, LastModifiedByUser = ?";
       $query .= " WHERE";
       $query .= " MovieID = ?";
       $query .= " SELECT TOP 1 * FROM " . self::$table_name . " WHERE MovieID = ?";
 
-      $params = array(generate_datetime_for_sql(), $_SESSION["user_id"],$movie->get_movieid(),$movie->get_movieid());
+      $now = generate_datetime_for_sql();
+      $params = array($now,$_SESSION["user_id"],$now,$_SESSION["user_id"],$movie->get_movieid(),$movie->get_movieid());
 
       $deletedmovie_id = self::update_by_sql($query, $params);
 
