@@ -69,7 +69,7 @@ class User extends DatabaseObject {
     $query .= " (Username, HashedPassword, UserRoleID, DateTimeCreated)";
     $query .= " VALUES";
     $query .= " (?, ?, ?, ?)";
-    $query .= " SELECT SCOPE_IDENTITY AS id";
+    $query .= "; SELECT SCOPE_IDENTITY() AS id";
 
 
     $params = array($post["username"], $hashed_password, $userroleid, generate_datetime_for_sql());
@@ -83,28 +83,28 @@ class User extends DatabaseObject {
 
   public function update($post, $user_id=0) {
 
-    if (isset($_POST["new_password"])) {
+    if (isset($post["new_password"])) {
       $hashed_password = User::hash_password($post["new_password"]);
 
       $query  = "UPDATE " . self::$table_name;
       $query .= " SET Username = ?, HashedPassword = ?";
       $query .= " WHERE";
       $query .= " UserID = ?";
+      $query .= " SELECT TOP 1 * FROM " . self::$table_name . " WHERE UserID = ?";
 
-      $params = array($post["new_username"], $hashed_password, $user_id);
+      $params = array($post["new_username"], $hashed_password, $user_id, $user_id);
     }
     else {
       $query  = "UPDATE " . self::$table_name;
       $query .= " SET Username = ?";
       $query .= " WHERE";
       $query .= " UserID = ?";
+      $query .= " SELECT TOP 1 * FROM " . self::$table_name . " WHERE UserID = ?";
 
-      $params = array($post["new_username"], $user_id);
+      $params = array($post["new_username"], $user_id, $user_id);
     }
-
     $updated_user = self::update_by_sql($query, $params);
     return $updated_user;
-
   }
 
   public static function delete($user_id=0) {
