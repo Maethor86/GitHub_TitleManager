@@ -5,6 +5,7 @@ GOTO :SET_VARIABLES
 :: -----------------------------------------------ABOUT----------------------------------------------------------------------------
 :ABOUT_SCRIPT
 
+ECHO.
 ECHO 	--- About Script ---
 ECHO 	Author:		Maethor
 ECHO 	Date created:	180302 15:11, by H710-MAETHOR\Maethor
@@ -15,6 +16,8 @@ GOTO :USER_INPUT
 
 :: -----------------------------------------------VARIABLES ETC---------------------------------------------------------------------
 :SET_VARIABLES
+
+SET "SERVER=H710-MAETHOR\SQLEXPRESS"
 
 SET "BASELINE_FILE=00.00.0000.sql"
 SET "INITIALDATA_FILE=initial.sql"
@@ -40,8 +43,6 @@ SET "DATAINIT_LOG="%LOG_DIR%%DATAINIT_FILE%""
 SET "BASELINE_SCRIPT="%BASELINE_DIR%%BASELINE_FILE%""
 SET "INITIALDATA_SCRIPT="%DATA_DIR%%INITIALDATA_FILE%""
 SET "TMP_FILE="%SCHEMA_DIR%tmp.txt""
-SET "TMP_FILE2="%SCHEMA_DIR%tmp2.txt""
-
 
 SET "EXECUTION_ERROR_FILE=error_execution.log"
 SET "DATAINIT_ERROR_FILE=error_datainit.log"
@@ -81,27 +82,35 @@ GOTO :CREATE_BASELINE
 :CREATE_BASELINE
 
 :: ---- create database, and database schema, stored procedures, static data
+ECHO.
 ECHO Baselining...
-(sqlcmd -b -S H710-MAETHOR\SQLEXPRESS -i %BASELINE_SCRIPT% -v DBNAME=%inputDBNAME% SCRIPTNAME=%BASELINE_FILE% -o %TMP_FILE%) && (GOTO :BASELINE_SUCCESSFUL) || (GOTO :ERROR_BASELINE)
-
-:BASELINE_SUCCESSFUL
-ECHO Baseline successful!
+SET LATEST_VERSION=NULL
 ECHO. >>%EXECUTION_LOG%
-ECHO ------------%date% %time%, by %USER%------------ >>%EXECUTION_LOG%
-ECHO Database '%inputDBNAME%' successfully baselined!>>%EXECUTION_LOG%
-ECHO --- Script messages for %BASELINE_FILE%  --->>%EXECUTION_LOG%
-TYPE %TMP_FILE%>>%EXECUTION_LOG%
-ECHO --- End of script messages for %BASELINE_FILE% --->>%EXECUTION_LOG%
-IF EXIST %TMP_FILE% DEL %TMP_FILE%
-
-FOR /f "usebackq" %%G IN (`DIR /b "%SCHEMA_DIR%*.sql"`) DO (sqlcmd -b -S H710-MAETHOR\SQLEXPRESS -i %SCHEMA_DIR%%%G -v DBNAME=%inputDBNAME% -o %TMP_FILE%) || (GOTO :ERROR_BASELINE)
-
+(sqlcmd -b -S %SERVER% -i %BASELINE_SCRIPT% -v DBNAME=%inputDBNAME% SCRIPTNAME=%BASELINE_FILE% -o %TMP_FILE%) && (SET "LATEST_VERSION=%BASELINE_FILE%" & CALL :SCRIPT_SUCCESSFUL %BASELINE_FILE%) || (CALL :SCRIPT_UNSUCCESSFUL %BASELINE_FILE%)
+ECHO Baseline successful!
+ECHO Updating database...
+FOR /f "usebackq" %%G IN (`DIR /b "%SCHEMA_DIR%*.sql"`) DO (sqlcmd -b -S %SERVER% -i %SCHEMA_DIR%%%G -v DBNAME=%inputDBNAME% -o %TMP_FILE%) && (SET "LATEST_VERSION=%%G" & CALL :SCRIPT_SUCCESSFUL %%G) || (CALL :SCRIPT_UNSUCCESSFUL %%G)
+ECHO Database updated to latest version (%LATEST_VERSION:~0,-4%)!
 GOTO :LOAD_DATA
+
+:SCRIPT_SUCCESSFUL
+ECHO %date% %time% - %USER% - %inputDBNAME% - the script %1 was run successfully >>%EXECUTION_LOG%
+EXIT /b
+
+:SCRIPT_UNSUCCESSFUL
+ECHO. >>%EXECUTION_ERROR_LOG%
+ECHO %date% %time% - %USER% - %inputDBNAME% - the script %1 was run unsuccessfully - see execution error log >>%EXECUTION_LOG%
+ECHO %date% %time% - %USER% - %inputDBNAME% - the script %1 was run unsuccessfully >>%EXECUTION_ERROR_LOG%
+ECHO --- Script messages for %1 --->>%EXECUTION_ERROR_LOG%
+TYPE %TMP_FILE%>>%EXECUTION_ERROR_LOG%
+ECHO --- End of script messages for %1 --->>%EXECUTION_ERROR_LOG%
+GOTO :QUIT_WITH_ERROR
 
 
 
 :: ---- load inital data
 :LOAD_DATA
+ECHO. >>%DATAINIT_LOG%
 
 setLocal EnableDelayedExpansion
 
@@ -115,21 +124,27 @@ SET /a TOTAL_POSTER_FILES=0
 FOR /f "usebackq" %%g IN (`DIR /b "%DATA_DIR%posters\*.*"`) DO (SET /a TOTAL_POSTER_FILES=TOTAL_POSTER_FILES+1)
 
 ECHO Loading data...
-FOR /f "usebackq" %%G IN (`DIR /b "%DATA_DIR_FIRST%*.csv"`) DO ((sqlcmd -b -S H710-MAETHOR\SQLEXPRESS -i %INITIALDATA_SCRIPT% -v DBNAME=%inputDBNAME% SCRIPTNAME=%INITIALDATA_FILE% DIRECTORY="%DATA_DIR_FIRST%" FILENAME=%%G -o %TMP_FILE%) && (SET /a COUNT=COUNT+1 & CALL :SHOW_PROGRESS !COUNT! %TOTAL_FILES% & CALL :WRITE_FROM_TEMPFILE) || (GOTO :ERROR_DATALOAD))
-FOR /f "usebackq" %%G IN (`DIR /b "%DATA_DIR_SECOND%*.csv"`) DO ((sqlcmd -b -S H710-MAETHOR\SQLEXPRESS -i %INITIALDATA_SCRIPT% -v DBNAME=%inputDBNAME% SCRIPTNAME=%INITIALDATA_FILE% DIRECTORY="%DATA_DIR_SECOND%" FILENAME=%%G -o %TMP_FILE%) && (SET /a COUNT=COUNT+1 & CALL :SHOW_PROGRESS !COUNT! %TOTAL_FILES% & CALL :WRITE_FROM_TEMPFILE) || (GOTO :ERROR_DATALOAD))
-FOR /f "usebackq" %%G IN (`DIR /b "%DATA_DIR_THIRD%*.csv"`) DO ((sqlcmd -b -S H710-MAETHOR\SQLEXPRESS -i %INITIALDATA_SCRIPT% -v DBNAME=%inputDBNAME% SCRIPTNAME=%INITIALDATA_FILE% DIRECTORY="%DATA_DIR_THIRD%" FILENAME=%%G -o %TMP_FILE%) && (SET /a COUNT=COUNT+1 & CALL :SHOW_PROGRESS !COUNT! %TOTAL_FILES% & CALL :WRITE_FROM_TEMPFILE) || (GOTO :ERROR_DATALOAD))
-FOR /f "usebackq" %%G IN (`DIR /b "%DATA_DIR%posters\*"`) DO ((COPY /Y "%DATA_DIR%posters\%%G" "%POSTER_DIR%%%G" >nul) && (SET /a POSTER_COUNT=POSTER_COUNT+1 & CALL :SHOW_PROGRESS !POSTER_COUNT! %TOTAL_POSTER_FILES%) || (GOTO :ERROR_DATALOAD))
+FOR /f "usebackq" %%G IN (`DIR /b "%DATA_DIR_FIRST%*.csv"`) DO ((sqlcmd -b -S %SERVER% -i %INITIALDATA_SCRIPT% -v DBNAME=%inputDBNAME% SCRIPTNAME=%INITIALDATA_FILE% DIRECTORY="%DATA_DIR_FIRST%" FILENAME=%%G -o %TMP_FILE%) && (SET /a COUNT=COUNT+1 & CALL :SHOW_PROGRESS !COUNT! %TOTAL_FILES% & CALL :DATASCRIPT_SUCCESSFUL %INITIALDATA_FILE% %%G) || (CALL :DATASCRIPT_UNSUCCESSFUL %INITIALDATA_FILE% %%G))
+FOR /f "usebackq" %%G IN (`DIR /b "%DATA_DIR_SECOND%*.csv"`) DO ((sqlcmd -b -S %SERVER% -i %INITIALDATA_SCRIPT% -v DBNAME=%inputDBNAME% SCRIPTNAME=%INITIALDATA_FILE% DIRECTORY="%DATA_DIR_SECOND%" FILENAME=%%G -o %TMP_FILE%) && (SET /a COUNT=COUNT+1 & CALL :SHOW_PROGRESS !COUNT! %TOTAL_FILES% & CALL :DATASCRIPT_SUCCESSFUL %INITIALDATA_FILE% %%G) || (CALL :DATASCRIPT_UNSUCCESSFUL %INITIALDATA_FILE% %%G))
+FOR /f "usebackq" %%G IN (`DIR /b "%DATA_DIR_THIRD%*.csv"`) DO ((sqlcmd -b -S %SERVER% -i %INITIALDATA_SCRIPT% -v DBNAME=%inputDBNAME% SCRIPTNAME=%INITIALDATA_FILE% DIRECTORY="%DATA_DIR_THIRD%" FILENAME=%%G -o %TMP_FILE%) && (SET /a COUNT=COUNT+1 & CALL :SHOW_PROGRESS !COUNT! %TOTAL_FILES% & CALL :DATASCRIPT_SUCCESSFUL %INITIALDATA_FILE% %%G) || (CALL :DATASCRIPT_UNSUCCESSFUL %INITIALDATA_FILE% %%G))
+FOR /f "usebackq" %%G IN (`DIR /b "%DATA_DIR%posters\*"`) DO ((COPY /Y "%DATA_DIR%posters\%%G" "%POSTER_DIR%%%G" >nul) && (SET /a POSTER_COUNT=POSTER_COUNT+1 & CALL :SHOW_PROGRESS !POSTER_COUNT! %TOTAL_POSTER_FILES%) || (CALL :DATASCRIPT_UNSUCCESSFUL %%G))
 setLocal DisableDelayedExpansion
-GOTO :DATALOAD_SUCCESSFUL
 
-:DATALOAD_SUCCESSFUL
 ECHO Loading data successful!
-ECHO. >>%DATAINIT_LOG%
-ECHO ------------%date% %time%, by %USER%------------ >>%DATAINIT_LOG%
-ECHO Initializing database with initial data was successful.>>%DATAINIT_LOG%
-TYPE %TMP_FILE2%>>%DATAINIT_LOG%
 GOTO :QUIT_WITHOUT_ERROR
 
+:DATASCRIPT_SUCCESSFUL
+ECHO %date% %time% - %USER% - %inputDBNAME% - the script %1 (%2) was run successfully >>%DATAINIT_LOG%
+EXIT /b
+
+:DATASCRIPT_UNSUCCESSFUL
+ECHO. >>%DATAINIT_ERROR_LOG%
+ECHO %date% %time% - %USER% - %inputDBNAME% - the script %1 (%2) was run unsuccessfully >>%DATAINIT_LOG%
+ECHO %date% %time% - %USER% - %inputDBNAME% - the script %1 (%2) was run unsuccessfully >>%DATAINIT_ERROR_LOG%
+ECHO --- Script messages for %1 (%2) --->>%DATAINIT_ERROR_LOG%
+TYPE %TMP_FILE%>>%DATAINIT_ERROR_LOG%
+ECHO --- End of script messages for %1 (%2) --->>%DATAINIT_ERROR_LOG%
+GOTO :QUIT_WITH_ERROR
 
 :QUIT_WITHOUT_ERROR
 ECHO.
@@ -142,42 +157,13 @@ ECHO.
 ECHO Success!
 ECHO Press any key to exit...
 IF EXIST %TMP_FILE% DEL %TMP_FILE%
-IF EXIST %TMP_FILE2% DEL %TMP_FILE2%
 PAUSE >NUL
 EXIT
 
-
-
 :: error methods
 
-:ERROR_BASELINE
-ECHO.>>%EXECUTION_ERROR_LOG%
-ECHO ------------%date% %time%, by %USER%------------ >>%EXECUTION_ERROR_LOG%
-ECHO Something went wrong trying to create database with schema.>>%EXECUTION_ERROR_LOG%
-ECHO --- Script messages for %BASELINE_FILE%  --->>%EXECUTION_ERROR_LOG%
-TYPE %TMP_FILE%>>%EXECUTION_ERROR_LOG%
-ECHO --- End of script messages for %BASELINE_FILE% --->>%EXECUTION_ERROR_LOG%
-ECHO Baseline not successful.
-ECHO.
-ECHO Database '%inputDBNAME%' not installed!
-ECHO Quitting with error.
-GOTO :QUIT_WITH_ERROR
-
-:ERROR_DATALOAD
-ECHO.>>%DATAINIT_ERROR_LOG%
-ECHO ------------%date% %time%, by %USER%------------ >>%DATAINIT_ERROR_LOG%
-ECHO Something went wrong trying to initialize database with initial data.>>%DATAINIT_ERROR_LOG%
-ECHO --- Script messages for %INITIALDATA_FILE% --->>%DATAINIT_ERROR_LOG%
-TYPE %TMP_FILE%>>%DATAINIT_ERROR_LOG%
-ECHO --- End of script messages for %INITIALDATA_FILE% --->>%DATAINIT_ERROR_LOG%
-ECHO Loading data not successful.
-ECHO.
-ECHO Initial data not loaded into the database '%inputDBNAME%'!
-ECHO Quitting with error.
-GOTO :QUIT_WITH_ERROR
-
-
 :QUIT_WITH_ERROR
+ECHO Database installation not successful. Quitting with error.
 ECHO.
 ECHO See the logfiles to see the errors generated by SQLSERVER:
 ECHO 	Execution error log: 	%EXECUTION_ERROR_LOG%
@@ -186,21 +172,12 @@ ECHO.
 ECHO Not success.
 ECHO Press any key to exit...
 IF EXIST %TMP_FILE% DEL %TMP_FILE%
-IF EXIST %TMP_FILE2% DEL %TMP_FILE2%
 PAUSE >NUL
 EXIT
 
 :: end error methods
 
-
 :: other methods
-
-:WRITE_FROM_TEMPFILE
-ECHO --- Script messages for %INITIALDATA_FILE% --->>%TMP_FILE2%
-TYPE %TMP_FILE%>>%TMP_FILE2%
-ECHO --- End of script messages for %INITIALDATA_FILE% --->>%TMP_FILE2%
-EXIT /b
-
 
 :SHOW_PROGRESS
 setLocal EnableDelayedExpansion
