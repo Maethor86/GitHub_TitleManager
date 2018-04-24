@@ -99,7 +99,9 @@ if (isset($_GET["movieID"])) {
     $output .= "</a></td>";
     $output .= "<td>";
     $output .= "<h4>About</h4>";
-    $output .= "Status: ".$current_moviestatus->get_description();
+    $output .= "Added to library: ". generate_datetime_diff(new TMDateTime($movie->get_datetimecreated())) . " by " . User::find_by_id($movie->get_createdbyuser())->get_username() . ". <br />";
+    $output .= "Last updated: ". generate_datetime_diff(new TMDateTime($movie->get_datetimelastmodified())) . " by " . User::find_by_id($movie->get_createdbyuser())->get_username() . ". <br />";
+    $output .= "Status: ". $current_moviestatus->get_description();
     if ($current_moviestatus->get_moviestatusid() == Moviestatus::get_loanedoutmoviestatusid()) {
       $loaner = Loaner::find_by_id(Movieloan::find_by_movieid($movie->get_movieid())->get_loanerid());
       $output .= " to ";
