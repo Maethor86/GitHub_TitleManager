@@ -4,6 +4,7 @@
 <head>
 	<title>Title Manager</title>
   <link rel="stylesheet" type="text/css" HREF="stylesheets/public.css" media="all" />
+	<link rel="shortcut icon" href="images/site/site-logo.png">
 </head>
 
 <body>
