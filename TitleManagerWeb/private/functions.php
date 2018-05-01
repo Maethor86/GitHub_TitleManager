@@ -28,7 +28,7 @@ function __autoload($class_name) {
 function load_layout($page_type) {
   switch ($page_type) {
     case "login":
-        $layout_files_to_load["header"]        = LAYOUT_PATH.DS."standard".DS."header_standard.php";
+        $layout_files_to_load["header"]        = LAYOUT_PATH.DS."login".DS."header_login.php";
         $layout_files_to_load["sidebar_left"]  = LAYOUT_PATH.DS."login".DS."sidebar_left_login.php";
         $layout_files_to_load["sidebar_right"] = LAYOUT_PATH.DS."login".DS."sidebar_right_login.php";
         $layout_files_to_load["footer"]        = LAYOUT_PATH.DS."login".DS."footer_login.php";
@@ -91,13 +91,13 @@ function generate_datetime_diff(TMDateTime $then) {
       $a = (int)(60*24*$diff->format("%a"));
       $b = (int)($diff->format("%h")*60);
       $c = (int)($diff->format("%i"));
-      $d = $a + $b + $c;
-      if ($d < 60) {
-        if ($d == 1) {
-          $output .=  $d . " minute ago";
+      $minutes = $a + $b + $c;
+      if ($minutes < 60) {
+        if ($minutes <= 1) {
+          $output .=  "just now";
         }
         else {
-          $output .=  $d . " minutes ago";
+          $output .=  $minutes . " minutes ago";
         }
       }
       else {
