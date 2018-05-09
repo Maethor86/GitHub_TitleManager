@@ -4,6 +4,7 @@ $layout_files_to_load = load_layout("standard");
 
 include($layout_files_to_load["header"]);
 include($layout_files_to_load["sidebar_left"]);
+include($layout_files_to_load["sidebar_right"]);
 
 if (!($session->is_logged_in() && $session->is_session_valid())) {
   redirect_to("login.php");
@@ -31,7 +32,7 @@ if (isset($_GET["loaner"])) {
           $movieloan_expanded = Movieloan::find_by_movieid($_GET["movie"]);
           if ($movieloan_expanded) {
               $expanded_loan .= "<br />";
-              $expanded_loan .= " &nbsp; &nbsp; Loaned by " . $loaner_expanded->get_description() . " on " . $movieloan_expanded->get_datetimeloan() . ". <br />";
+              $expanded_loan .= " &nbsp; &nbsp; Loaned by " . $loaner_expanded->get_description() . " " . generate_datetime_diff(new TMDateTime($movieloan_expanded->get_datetimeloan())) . ". <br />";
               $expanded_loan .= " &nbsp; &nbsp; The loan was registered by the user: " . User::find_by_id($movieloan_expanded->get_registeredbyuser())->get_username() . ". <br />";
           }
         }
@@ -88,7 +89,6 @@ echo $output;
 
 
 <?php
-include($layout_files_to_load["sidebar_right"]);
 include($layout_files_to_load["footer"]);
 ?>
 

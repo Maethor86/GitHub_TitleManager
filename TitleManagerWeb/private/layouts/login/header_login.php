@@ -12,8 +12,11 @@
 	<link rel="stylesheet" href="../private/bootstrap/css/bootstrap.css" />
 
   <link rel="stylesheet" type="text/css" href="stylesheets/public.css" media="all" />
+
+  <!-- Custom styles for this template -->
   <link rel="stylesheet" href="../private/bootstrap/css/signin.css">
   <link rel="stylesheet" href="../private/bootstrap/css/sticky-footer.css">
+
 	<link rel="shortcut icon" href="images/site/site-logo.png">
 </head>
 

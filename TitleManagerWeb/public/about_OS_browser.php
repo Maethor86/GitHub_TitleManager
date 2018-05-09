@@ -14,6 +14,7 @@ if (!$session->is_admin()) {
 <?php
 include($layout_files_to_load["header"]);
 include($layout_files_to_load["sidebar_left"]);
+include($layout_files_to_load["sidebar_right"]);
 echo $session->session_message();
 // include($content_files_to_load["title"]);
 ?>
@@ -32,7 +33,6 @@ echo get_user_browser();
 ?>
 
 <?php
-include($layout_files_to_load["sidebar_right"]);
 include($layout_files_to_load["footer"]);
 ?>
 

@@ -5,13 +5,10 @@ $layout_files_to_load = load_layout("standard");
 $_SESSION["subject_id"] = NULL;
 $_SESSION["page_id"] = NULL;
 
-include($layout_files_to_load["header"]);
-include($layout_files_to_load["sidebar_left"]);
 
 if (!($session->is_logged_in() && $session->is_session_valid())) {
   redirect_to("login.php");
 }
-echo $session->session_message();
 ?>
 
 <?php
@@ -48,7 +45,8 @@ elseif (!empty($_GET["page"])) {
 
   $page_id = $_GET["page"];
   $_SESSION["page_id"] = $page_id;
-  // $page = Page::find_by_id($page_id);
+  $page = Page::find_by_id($page_id);
+  $_SESSION["subject_id"] = $page->get_subjectid();
 
   switch ($page_id) {
 
@@ -95,6 +93,12 @@ elseif (!empty($_GET["page"])) {
 
 
 else {
+  include($layout_files_to_load["header"]);
+  include($layout_files_to_load["sidebar_left"]);
+  include($layout_files_to_load["sidebar_right"]);
+  echo $session->session_message();
+
+
   $user = User::find_by_id($_SESSION["user_id"]);
   echo make_page_title("Welcome!");
   echo "Hello ".$user->get_username().", welcome to Title Manager!<br />";
@@ -111,7 +115,6 @@ else {
 ?>
 
 <?php
-include($layout_files_to_load["sidebar_right"]);
 include($layout_files_to_load["footer"]);
 ?>
 

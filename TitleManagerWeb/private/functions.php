@@ -39,10 +39,10 @@ function load_layout($page_type) {
         $layout_files_to_load["sidebar_left"]  = LAYOUT_PATH.DS."standard".DS."sidebar_left_standard.php";
         $layout_files_to_load["sidebar_right"] = LAYOUT_PATH.DS."standard".DS."sidebar_right_standard.php";
         $layout_files_to_load["footer"]        = LAYOUT_PATH.DS."standard".DS."footer_standard.php";
-        $layout_files_to_load["sidebar_left_back"]  = LAYOUT_PATH.DS."sidebar_left_back.php";
-        $layout_files_to_load["sidebar_left_back_main"]  = LAYOUT_PATH.DS."sidebar_left_back_main.php";
-        $layout_files_to_load["sidebar_left_back_search"]  = LAYOUT_PATH.DS."sidebar_left_back_search.php";
-        $layout_files_to_load["sidebar_left_back_browse"]  = LAYOUT_PATH.DS."sidebar_left_back_browse.php";
+        $layout_files_to_load["sidebar_left_back"]  = LAYOUT_PATH.DS."standard".DS."sidebar_left_standard.php";
+        $layout_files_to_load["sidebar_left_back_main"]  = LAYOUT_PATH.DS."standard".DS."sidebar_left_standard.php";
+        $layout_files_to_load["sidebar_left_back_search"]  = LAYOUT_PATH.DS."standard".DS."sidebar_left_standard.php";
+        $layout_files_to_load["sidebar_left_back_browse"]  = LAYOUT_PATH.DS."standard".DS."sidebar_left_standard.php";
       break;
 
     default:
@@ -117,9 +117,11 @@ function generate_datetime_diff(TMDateTime $then) {
 
     default:
       if ($days_ago <= 20) {
-        $output .= $days_ago . " days ago, at ";
+        $output .= $days_ago . " days ago";
       }
-      $output .= $then->get_presentable_datetime();
+      else {
+        $output .= $then->get_presentable_datetime();
+      }
       break;
   }
   return $output;
@@ -128,7 +130,10 @@ function generate_datetime_diff(TMDateTime $then) {
 
 // small functions
 function make_page_title($page_title="Default") {
-  $output = "<h2 class=\"page_header\">{$page_title}</h2>";
+  $output  = "";
+  // $output .= "<div class=\"container-fluid text-left\">";
+  $output .= "<h2>{$page_title}</h2>";
+  // $output .= "</div>";
   return $output;
 }
 

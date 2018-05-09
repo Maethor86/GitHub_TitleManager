@@ -8,7 +8,6 @@ include($layout_files_to_load["sidebar_left"]);
 if ($session->is_logged_in() && $session->is_session_valid()) {
   redirect_to("index.php");
 }
-echo $session->session_message();
 ?>
 
 
@@ -60,14 +59,16 @@ else {
   <div class="<?php echo $class?>">
     <div class="row">
       <div class="col-sm">
-        <?php echo $message; ?>
+        <?php
+          echo $message;
+          echo $session->session_message();
+        ?>
       </div>
     </div>
   </div>
 </form>
 
 <?php
-include($layout_files_to_load["sidebar_right"]);
 include($layout_files_to_load["footer"]);
 ?>
 

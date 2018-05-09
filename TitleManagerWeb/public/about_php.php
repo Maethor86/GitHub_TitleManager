@@ -14,6 +14,7 @@ if (!$session->is_admin()) {
 <?php
 include($layout_files_to_load["header"]);
 include($layout_files_to_load["sidebar_left"]);
+include($layout_files_to_load["sidebar_right"]);
 echo $session->session_message();
 // include($content_files_to_load["title"]);
 ?>
@@ -21,7 +22,7 @@ echo $session->session_message();
 <?php
 
 echo "<h4>PHP Info:</h4>";
-echo phpinfo();
+// echo phpinfo();
 
 
 
@@ -29,7 +30,6 @@ echo phpinfo();
 ?>
 
 <?php
-include($layout_files_to_load["sidebar_right"]);
 include($layout_files_to_load["footer"]);
 ?>
 

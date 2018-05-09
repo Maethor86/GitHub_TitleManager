@@ -14,6 +14,7 @@ if (!$session->is_admin()) {
 <?php
 include($layout_files_to_load["header"]);
 include($layout_files_to_load["sidebar_left"]);
+include($layout_files_to_load["sidebar_right"]);
 echo $session->session_message();
 include($content_files_to_load["title"]);
 include($content_files_to_load["subtitles"]);
@@ -26,7 +27,6 @@ include($content_files_to_load["subtitles"]);
 ?>
 
 <?php
-include($layout_files_to_load["sidebar_right"]);
 include($layout_files_to_load["footer"]);
 ?>
 

@@ -2,8 +2,12 @@
 include("../private/initialize.php");
 $layout_files_to_load = load_layout("standard");
 
+$_SESSION["subject_id"] = NULL;
+$_SESSION["page_id"] = NULL;
+
 include($layout_files_to_load["header"]);
 include($layout_files_to_load["sidebar_left_back_main"]);
+include($layout_files_to_load["sidebar_right"]);
 
 if (!($session->is_logged_in() && $session->is_session_valid())) {
   redirect_to("login.php");
@@ -21,7 +25,7 @@ if ($previous_added_movie) {
   $previous_added_movie = $previous_added_movie[0];
 }
 
-$output  = "<h2 style=\"display: flex; align-items: center\">" . $user->get_username() . " &nbsp; " . $user->get_gravatar($user->get_username(), 40, "identicon", "g", TRUE) . "</h2>";
+$output  = "<h2>" . $user->get_username() . " &nbsp; " . $user->get_gravatar($user->get_username(), 40, "identicon", "g", TRUE) . "</h2>";
 $output .= "User since " . generate_datetime_diff(new TMDateTime($user->get_datetimecreated())) . ".<br />";
 $output .= "<h4>Logins</h4>";
 $output .= "Total logins: " . $total_logins . ".<br />";
@@ -44,7 +48,6 @@ echo $output;
 
 
 <?php
-include($layout_files_to_load["sidebar_right"]);
 include($layout_files_to_load["footer"]);
 ?>
 
