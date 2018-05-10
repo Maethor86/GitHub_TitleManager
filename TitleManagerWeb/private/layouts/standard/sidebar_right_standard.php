@@ -27,5 +27,9 @@ if ($session->is_logged_in() && $session->get_userid()) {
 }
 ?>
 
-<!-- <div class="container-fluid mh-100 my-3 text-left"> -->
-<div class="container mh-100 my-3 text-left">
+<div class="container-fluid mh-100 my-3">
+<div class="row">
+<div class="col-xl-6 offset-xl-3 text-left">
+
+
+<!-- <div class="container mh-100 my-3 text-left"> -->

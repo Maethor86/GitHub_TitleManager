@@ -40,7 +40,7 @@ if (isset($_GET["search"])) {
     else {
       $page = 1;
     }
-    $per_page = 10;
+    $per_page = 12;
     $total_results = Movie::count_movie_set_by_title($title, $status, $quality);
     $pagination = new Pagination($page, $per_page, $total_results);
 
@@ -48,8 +48,6 @@ if (isset($_GET["search"])) {
     if ($movies) {
       $results .= "<div class=\"container-fluid\">";
       $results .= "<div class=\"row\">";
-
-      // $results .= "<ul class=\"list-unstyled\">";
 
       foreach ($movies as $movie) {
 
@@ -74,17 +72,15 @@ if (isset($_GET["search"])) {
             break;
         }
 
-        $results .= "<div class=\"col-sm-6 my-1\">";
+        $results .= "<div class=\"col-sm-4 my-1\">";
 
         $results .= "<a class=\"text-dark\" style=\"text-decoration: none\" href=\"movie_info.php?movieID=" . $movie->get_movieid() . "\">"; // ***
         $results .= "<div class=\"card h-100\">";
         $results .= "<div class=\"card-header\">";
-        $results .= "<h5 class=\"card-title\">".$movie->get_title()."</h5>";
-        // $results .= $movie->get_title();
+        $results .= "<h5 class=\"card-title text-center\">".$movie->get_title()."</h5>";
         $results .= "</div>";
         $results .= "<img class=\"card-img-top\" src=\"data:image/jpeg;base64,".Poster::encode_poster($movie->get_posterfilename(),"jpg") ."\" alt=\"Generic placeholder image\">";
         $results .= "<div class=\"card-body\">";
-        // $results .= "<h5 class=\"card-title\">".$movie->get_title()."</h5>";
         $results .= "<h6 class=\"card-subtitle mb-2 text-muted\">".$movie->get_releasedyear();
         $results .= "<img class=\"float-right\" src=\"data:image/jpeg;base64,".Poster::encode_icon($icon,$icon_type)."\" style=\"width: 15%;\">";
         $results .= "<small class=\"font-italic\">";

@@ -7,6 +7,8 @@ $navbaritemsize = [
 ];
 $current_user_page = "current_user.php";
 $home_page = "main.php";
+$movie_info_page = "movie_info.php";
+
 $search_term = "";
 $search_term = (isset($_GET["search"])) ? $_GET["search"] : "";
 $page_title = "";
@@ -67,6 +69,7 @@ $output .= "</ul>";
 $output .= "<span class=\"navbar-text lead\">";
 (basename($_SERVER["PHP_SELF"]) == $current_user_page) ? $page_title = "User info" : FALSE;
 (basename($_SERVER["PHP_SELF"]) == $home_page) ? $page_title = "Home" : FALSE;
+(basename($_SERVER["PHP_SELF"]) == $movie_info_page) ? $page_title = "Movie info" : FALSE;
 $output .= $page_title;
 $output .= "</span>";
 echo $output;
